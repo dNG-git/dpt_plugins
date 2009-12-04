@@ -19,8 +19,8 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
 NOTE_END //n*/"""
-"""
-de.direct_netware.plugins.__init__
+"""/**
+de.direct_netware.db.__init__
 
 @internal   We are using epydoc (JavaDoc style) to automate the
             documentation process for creating the Developer's Manual.
@@ -29,14 +29,14 @@ de.direct_netware.plugins.__init__
 @author     direct Netware Group
 @copyright  (C) direct Netware Group - All rights reserved
 @package    pas_basic
-@subpackage plugins
+@subpackage db
 @since      v0.1.00
 @license    http://www.direct-netware.de/redirect.php?licenses;w3c
             W3C (R) Software License
 """
 
-from classes.pas_pluginmanager import direct_pluginmanager
+from de.direct_netware.plugins.classes.pas_pluginmanager import direct_pluginmanager
 
-direct_pluginmanager ("de.direct_netware.plugins")
+direct_pluginmanager ("de.direct_netware.db")
 
 ##j## EOF
