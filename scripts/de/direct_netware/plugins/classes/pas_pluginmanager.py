@@ -94,7 +94,7 @@ Register a python function for the hook.
 class direct_pluginmanager (object):
 #
 	"""
-The direct_pluginmanager class provides hook-based python plugins.
+The direct_pluginmanager class provides hook-based Python plugins.
 
 @author     direct Netware Group
 @copyright  (C) direct Netware Group - All rights reserved
@@ -135,7 +135,6 @@ Constructor
 			self.pluginmanager = self
 			_direct_pluginmanager = self
 			self.hooks = { }
-			self.instances = { }
 		#
 		else: self.pluginmanager = _direct_pluginmanager
 
@@ -234,9 +233,9 @@ Call all functions registered for the hook with the specified parameters.
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -pluginmanager->call_hook_handler (%s,+f_params)- (#echo(__LINE__)#)" % f_hook)
 		f_return = None
 
-		if (not f_params.has_key ("hook")): f_params['hook'] = f_hook
+		if (not "hook" in f_params): f_params['hook'] = f_hook
 
-		if ((self.pluginmanager.hooks.has_key (f_hook)) and (type (self.pluginmanager.hooks[f_hook]) == list)):
+		if ((f_hook in self.pluginmanager.hooks) and (type (self.pluginmanager.hooks[f_hook]) == list)):
 		#
 			for f_function in self.pluginmanager.hooks[f_hook]: f_return = f_function (f_params,f_last_return = f_return)
 		#
@@ -261,7 +260,7 @@ Register a python function for the hook.
 		if (f_exclusive): self.pluginmanager.hooks[f_hook] = [ f_function ]
 		else:
 		#
-			if (not self.pluginmanager.hooks.has_key (f_hook)): self.pluginmanager.hooks[f_hook] = [ ]
+			if (not f_hook in self.pluginmanager.hooks): self.pluginmanager.hooks[f_hook] = [ ]
 
 			if (f_prepend): self.pluginmanager.hooks[f_hook].insert (0,f_function)
 			else: self.pluginmanager.hooks[f_hook].append (f_function)
@@ -269,19 +268,34 @@ Register a python function for the hook.
 	#
 
 	@staticmethod
-	def get ():
+	def get (f_count = False):
 	#
 		"""
-Get the Pypluginmanager singleton.
+Get the direct_pluginmanager singleton.
 
-@return (Pypluginmanager) Object on success; None if not initialized
-@since  v1.0.1
+@param  bool Count "get ()" request
+@return (direct_pluginmanager) Object on success; None if not initialized
+@since  v1.0.0
 		"""
 
 		global _direct_pluginmanager,_direct_pluginmanager_counter
-		_direct_pluginmanager_counter += 1
+		if (f_count): _direct_pluginmanager_counter += 1
 
 		return _direct_pluginmanager
+	#
+
+	@staticmethod
+	def get_pluginmanager (f_count = False):
+	#
+		"""
+Get the direct_pluginmanager singleton.
+
+@param  bool Count "get ()" request
+@return (direct_pluginmanager) Object on success; None if not initialized
+@since  v1.0.0
+		"""
+
+		return direct_pluginmanager.get (f_count)
 	#
 
 	@staticmethod

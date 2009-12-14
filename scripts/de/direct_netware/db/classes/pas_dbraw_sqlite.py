@@ -220,7 +220,7 @@ Opens the connection to a database server and selects a database.
 
 		f_settings = direct_settings.get ()
 
-		if (f_settings.has_key ("db_dbfile")): f_return = self.command ("connect",f_settings['db_dbfile'],False)
+		if ("db_dbfile" in f_settings): f_return = self.command ("connect",f_settings['db_dbfile'],False)
 		else: f_return = False
 
 		return f_return
@@ -272,101 +272,7 @@ Dispatches database commands to the local thread.
 				f_return = True
 			#
 		#
-		elif (f_command == "query_exec"):
-		#
-			if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
-			else:
-			#
-				try:
-				#
-					f_result_object = self.local.resource.execute (f_data[1],f_data[2])
-
-					if (f_data[0] == "ar"): f_return = f_result_object.rowcount
-					elif (f_data[0] == "co"): f_return = True
-					elif (f_data[0] == "ma"):
-					#
-						f_return = [ ]
-						f_row_array = f_result_object.fetchone ()
-
-						while (f_row_array != None):
-						#
-							f_column = 0
-							f_row_keys_array = f_row_array.keys ()
-
-							f_filtered_row_array = { }
-
-							for f_column_data in f_row_array:
-							#
-								f_filtered_row_array[f_row_keys_array[f_column]] = f_column_data
-								f_column += 1
-							#
-
-							f_return.append (f_filtered_row_array)
-							f_row_array = f_result_object.fetchone ()
-						#
-					#
-					elif (f_data[0] == "ms"):
-					#
-						f_return = [ ]
-						f_row_array = f_result_object.fetchone ()
-
-						while (f_row_array != None):
-						#
-							if (len (f_row_array) > 0):
-							#
-								f_row = ""
-
-								for f_column_data in f_row_array:
-								#
-									if (len (f_row) > 0): f_row += "\n%s" % f_column_data
-									else: f_row = f_column_data
-								#
-
-								f_return.append (f_row)
-							#
-							f_row_array = f_result_object.fetchone ()
-						#
-					#
-					elif (f_data[0] == "nr"):
-					#
-						f_row_array = f_result_object.fetchone ()
-						f_return = f_row_array[0]
-					#
-					elif (f_data[0] == "sa"):
-					#
-						f_return = { }
-						f_row_array = f_result_object.fetchone ()
-
-						if (f_row_array != None):
-						#
-							f_column = 0
-							f_row_keys_array = f_row_array.keys ()
-
-							for f_column_data in f_row_array:
-							#
-								f_return[f_row_keys_array[f_column]] = f_column_data
-								f_column += 1
-							#
-						#
-					#
-					elif (f_data[0] == "ss"):
-					#
-						f_return = ""
-						f_row_array = f_result_object.fetchone ()
-
-						if ((f_row_array != None) and (len (f_row_array) > 0)):
-						#
-							for f_column_data in f_row_array:
-							#
-								if (len (f_return) > 0): f_return += "\n%s" % f_column_data
-								else: f_return = f_column_data
-							#
-						#
-					#
-				#
-				except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
-			#
-		#
+		elif (f_command == "query_exec"): f_return = self.thread_query_exec (f_data[0],f_data[1],f_data[2])
 		elif ((f_command == "resource_check") and (self.local.resource != None)): f_return = True
 		elif (f_command == "transaction_begin"):
 		#
@@ -475,7 +381,7 @@ Builds a valid SQL query for SQLite and executes it.
 					if (len (f_join_array['requirements']) > 0):
 					#
 						f_xml_node_array = f_xml_object.xml2array (f_join_array['requirements'],f_strict_standard = False)
-						if (f_xml_node_array.has_key ("sqlconditions")): self.query_cache += self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
+						if ("sqlconditions" in f_xml_node_array): self.query_cache += self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
 					#
 				#
 			#
@@ -484,7 +390,7 @@ Builds a valid SQL query for SQLite and executes it.
 			#
 				f_xml_node_array = f_xml_object.xml2array (f_data['set_attributes'],f_strict_standard = False)
 
-				if (f_xml_node_array.has_key ("sqlvalues")):
+				if ("sqlvalues" in f_xml_node_array):
 				#
 					if (f_data['type'] == "update"): self.query_cache += " SET %s" % self.query_build_set_attributes (f_xml_node_array['sqlvalues'])
 					else: self.query_cache += " %s" % self.query_build_values_keys (f_xml_node_array['sqlvalues'])
@@ -499,7 +405,7 @@ Builds a valid SQL query for SQLite and executes it.
 				#
 					f_xml_node_array = f_xml_object.xml2array (f_data['row_conditions'],f_strict_standard = False)
 
-					if (f_xml_node_array.has_key ("sqlconditions")):
+					if ("sqlconditions" in f_xml_node_array):
 					#
 						f_where_defined = True
 						self.query_cache += " WHERE %s" % self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
@@ -512,7 +418,7 @@ Builds a valid SQL query for SQLite and executes it.
 					#
 						f_xml_node_array = f_xml_object.xml2array (f_data['search_conditions'],f_strict_standard = False)
 
-						if (f_xml_node_array.has_key ("sqlconditions")):
+						if ("sqlconditions" in f_xml_node_array):
 						#
 							if (f_where_defined): self.query_cache += " AND (%s)" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
 							else: self.query_cache += " WHERE %s" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
@@ -526,7 +432,7 @@ Builds a valid SQL query for SQLite and executes it.
 			if ((f_data['type'] == "select") and (len (f_data['ordering']) > 0)):
 			#
 				f_xml_node_array = f_xml_object.xml2array (f_data['ordering'],f_strict_standard = False)
-				if (f_xml_node_array.has_key ("sqlordering")): self.query_cache += " ORDER BY %s" % self.query_build_ordering (f_xml_node_array['sqlordering'])
+				if ("sqlordering" in f_xml_node_array): self.query_cache += " ORDER BY %s" % self.query_build_ordering (f_xml_node_array['sqlordering'])
 			#
 
 			if ((f_data['type'] == "insert") or (f_data['type'] == "replace")):
@@ -537,14 +443,12 @@ Builds a valid SQL query for SQLite and executes it.
 					#
 						f_values_keys = ""
 
-						f_re_values_keys = re.compile ("^(.*?)\.(\w+)$")
-
 						for f_values_key in f_data['values_keys']:
 						#
 							if (len (f_values_keys) > 0): f_values_keys += ",?"
 							else: f_values_keys += "?"
 
-							self.query_parameters += ( f_re_values_keys.sub ("\2",f_values_key), )
+							self.query_parameters += ( f_values_key[(f_values_key.find (".") + 1):], )
 						#
 
 						self.query_cache += " (%s)" % f_values_keys
@@ -554,7 +458,7 @@ Builds a valid SQL query for SQLite and executes it.
 				if (len (f_data['values']) > 0):
 				#
 					f_xml_node_array = f_xml_object.xml2array (f_data['values'],f_strict_standard = False)
-					if (f_xml_node_array.has_key ("sqlvalues")): self.query_cache += " VALUES %s" % self.query_build_values (f_xml_node_array['sqlvalues'])
+					if ("sqlvalues" in f_xml_node_array): self.query_cache += " VALUES %s" % self.query_build_values (f_xml_node_array['sqlvalues'])
 				#
 			#
 
@@ -596,7 +500,7 @@ Builds the SQL attributes list of a query.
 
 		if ((type (f_attributes_array) == list) and (len (f_attributes_array) > 0)):
 		#
-			f_re_attribute = re.compile ("^(.*?)\((.*?)\)(.*?)$")
+			f_re_attribute = re.compile ("^(.*?)\\((.*?)\\)(.*?)$")
 
 			for f_attribute in f_attributes_array:
 			#
@@ -631,7 +535,7 @@ Builds the SQL ORDER BY part of a query.
 
 		if (type (f_ordering_list) == dict):
 		#
-			if (f_ordering_list.has_key ("xml.item")): del (f_ordering_list['xml.item'])
+			if ("xml.item" in f_ordering_list): del (f_ordering_list['xml.item'])
 
 			for f_ordering_key in f_ordering_list:
 			#
@@ -661,7 +565,7 @@ Creates a WHERE string including sublevel conditions.
 
 		if (type (f_requirements_array) == dict):
 		#
-			if (f_requirements_array.has_key ("xml.item")): del (f_requirements_array['xml.item'])
+			if ("xml.item" in f_requirements_array): del (f_requirements_array['xml.item'])
 
 			for f_requirement_key in f_requirements_array:
 			#
@@ -669,11 +573,11 @@ Creates a WHERE string including sublevel conditions.
 
 				if (type (f_requirement_array) == dict):
 				#
-					if (f_requirement_array.has_key ("xml.item")):
+					if ("xml.item" in f_requirement_array):
 					#
 						if (len (f_return) > 0):
 						#
-							if ((f_requirement_array['xml.item']['attributes'].has_key ("condition")) and (f_requirement_array['xml.item']['attributes']['condition'] == "or")): f_return += " OR "
+							if (("condition" in f_requirement_array['xml.item']['attributes']) and (f_requirement_array['xml.item']['attributes']['condition'] == "or")): f_return += " OR "
 							else: f_return += " AND "
 						#
 
@@ -682,19 +586,19 @@ Creates a WHERE string including sublevel conditions.
 					#
 					elif (f_requirement_array['value'] != "*"):
 					#
-						if (not f_requirement_array['attributes'].has_key ("type")): f_requirement_array['attributes']['type'] = "string"
+						if (not "type" in f_requirement_array['attributes']): f_requirement_array['attributes']['type'] = "string"
 
 						if (len (f_return) > 0):
 						#
-							if ((f_requirement_array['attributes'].has_key ("condition")) and (f_requirement_array['attributes']['condition'] == "or")): f_return += " OR "
+							if (("condition" in f_requirement_array['attributes']) and (f_requirement_array['attributes']['condition'] == "or")): f_return += " OR "
 							else: f_return += " AND "
 						#
 
-						if (not f_requirement_array['attributes'].has_key ("operator")): f_requirement_array['attributes']['operator'] = ""
+						if (not "operator" in f_requirement_array['attributes']): f_requirement_array['attributes']['operator'] = ""
 						if ((f_requirement_array['attributes']['operator'] != "!=") and (f_requirement_array['attributes']['operator'] != "<") and (f_requirement_array['attributes']['operator'] != "<=") and (f_requirement_array['attributes']['operator'] != ">") and (f_requirement_array['attributes']['operator'] != ">=")): f_requirement_array['attributes']['operator'] = "=="
 						f_return += "%s" % f_requirement_array['attributes']['attribute']
 
-						if (f_requirement_array['attributes'].has_key ("null")): f_return += " %s NULL" % f_requirement_array['attributes']['operator']
+						if ("null" in f_requirement_array['attributes']): f_return += " %s NULL" % f_requirement_array['attributes']['operator']
 						elif (len (f_requirement_array['value']) > 0):
 						#
 							f_return += " %s ?" % f_requirement_array['attributes']['operator']
@@ -730,7 +634,7 @@ Creates search requests
 			f_attributes_array = [ ]
 			f_search_term = ""
 
-			if (f_conditions_array.has_key ("xml.item")): del (f_conditions_array['xml.item'])
+			if ("xml.item" in f_conditions_array): del (f_conditions_array['xml.item'])
 
 			for f_condition_name in f_conditions_array:
 			#
@@ -739,7 +643,7 @@ Creates search requests
 				if (type (f_condition_array) == dict): f_dict = True
 				else: f_dict = False
 
-				if ((f_dict) and (f_condition_array.has_key ("xml.mtree"))): f_mtree = True
+				if ((f_dict) and ("xml.mtree" in f_condition_array)): f_mtree = True
 				else: f_mtree = False
 
 				if ((f_condition_name == "attribute") and (f_mtree)):
@@ -747,7 +651,7 @@ Creates search requests
 					for f_condition_attribute_key in f_condition_array:
 					#
 						f_condition_attribute_array = f_condition_array[f_condition_attribute_key]
-						if (f_condition_attribute_array.has_key ("value")): f_attributes_array.append (f_condition_attribute_array['value'])
+						if ("value" in f_condition_attribute_array): f_attributes_array.append (f_condition_attribute_array['value'])
 					#
 				#
 				elif ((f_condition_name == "searchterm") and (f_mtree)):
@@ -755,10 +659,10 @@ Creates search requests
 					for f_condition_searchterm_key in f_condition_array:
 					#
 						f_condition_searchterm_array = f_condition_array[f_condition_searchterm_key]
-						if ((f_condition_searchterm_array.has_key ("value")) and (len (f_condition_searchterm_array['value']) > 0)): f_search_term += f_condition_searchterm_array['value']
+						if (("value" in f_condition_searchterm_array) and (len (f_condition_searchterm_array['value']) > 0)): f_search_term += f_condition_searchterm_array['value']
 					#
 				#
-				elif ((f_dict) and (f_condition_array.has_key ("tag"))):
+				elif ((f_dict) and ("tag" in f_condition_array)):
 				#
 
 					if (f_condition_array['tag'] == "attribute"): f_attributes_array.append (f_condition_array['value'])
@@ -777,8 +681,8 @@ Result is: [0] => %Test% [1] => %Test1 Test2 Test3% [2] => %Test4%
 ----------------------------------------------------------------------------
 				"""
 
-				f_search_term = re.compile("^\*",re.M).sub ("%%",f_search_term)
-				f_search_term = re.compile("(\w)\*").sub ("\1%%",f_search_term)
+				f_search_term = re.compile("^\\*",re.M).sub ("%%",f_search_term)
+				f_search_term = re.compile("(\\w)\\*").sub ("\\1%%",f_search_term)
 				f_search_term = f_search_term.replace (" OR "," ")
 				f_search_term = f_search_term.replace (" NOT "," ")
 				f_search_term = f_search_term.replace ("HIGH ","")
@@ -867,17 +771,16 @@ Builds the SQL attributes and values list for UPDATE.
 
 		if (type (f_attributes_array) == dict):
 		#
-			if (f_attributes_array.has_key ("xml.item")): del (f_attributes_array['xml.item'])
-			f_re_attribute = re.compile ("^(.*?)\.(\w+)$")
+			if ("xml.item" in f_attributes_array): del (f_attributes_array['xml.item'])
 
 			for f_attribute_key in f_attributes_array:
 			#
 				f_attribute_array = f_attributes_array[f_attribute_key]
 
-				if (len (f_return) > 0): f_return += ", %s=" % f_re_attribute.sub ("\2",f_attribute_array['attributes']['attribute'])
-				else: f_return += "%s=" % f_re_attribute.sub ("\2",f_attribute_array['attributes']['attribute'])
+				if (len (f_return) > 0): f_return += ", %s=" % f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):]
+				else: f_return += "%s=" % f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):]
 
-				if (f_attribute_array['attributes'].has_key ("null")): f_return += "NULL"
+				if ("null" in f_attribute_array['attributes']): f_return += "NULL"
 				elif (len (f_attribute_array['value']) > 0):
 				#
 					f_return += "?"
@@ -908,14 +811,14 @@ Builds the SQL VALUES part of a query.
 
 		if (type (f_values_array) == dict):
 		#
-			if (f_values_array.has_key ("xml.item")): del (f_values_array['xml.item'])
+			if ("xml.item" in f_values_array): del (f_values_array['xml.item'])
 			f_bracket_check = False
 
 			for f_value_key in f_values_array:
 			#
 				f_value_array = f_values_array[f_value_key]
 
-				if (f_value_array.has_key ("xml.item")):
+				if ("xml.item" in f_value_array):
 				#
 					if (len (f_return) > 0): f_return += ","
 					f_return += self.query_build_values (f_value_array)
@@ -927,7 +830,7 @@ Builds the SQL VALUES part of a query.
 					if (len (f_return) > 0): f_return += ","
 					else: f_return += "("
 
-					if (f_value_array['attributes'].has_key ("null")): f_return += "NULL"
+					if ("null" in f_value_array['attributes']): f_return += "NULL"
 					elif (len (f_value_array['value']) > 0):
 					#
 						f_return += "?"
@@ -961,17 +864,16 @@ Builds the SQL attributes and values list for INSERT.
 
 		if (type (f_attributes_array) == dict):
 		#
-			if (f_attributes_array.has_key ("xml.item")): del (f_attributes_array['xml.item'])
+			if ("xml.item" in f_attributes_array): del (f_attributes_array['xml.item'])
 			f_keys = [ ]
-			f_re_attribute = re.compile ("^(.*?)\.(\w+)$")
 			f_values = [ ]
 
 			for f_attribute_key in f_attributes_array:
 			#
 				f_attribute_array = f_attributes_array[f_attribute_key]
-				f_keys.append (f_re_attribute.sub ("\2",f_attribute_array['attributes']['attribute']))
+				f_keys.append (f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):])
 
-				if (f_attribute_array['attributes'].has_key ("null")): f_values.append ("NULL")
+				if ("null" in f_attribute_array['attributes']): f_values.append ("NULL")
 				elif (len (f_attribute_array['value']) > 0):
 				#
 					f_values.append ("?")
@@ -1054,6 +956,120 @@ Set a given function to be called for each exception or error.
 		"""
 
 		self.error_callback = f_function
+	#
+
+	def thread_query_exec (self,f_answer,f_query,f_query_params):
+	#
+		"""
+Transmits an SQL query and returns the result in a developer specified
+format via f_answer.
+
+@param  f_answer Defines the requested type that should be returned
+        The following types are supported: "ar", "co", "ma", "ms", "nr",
+        "sa" or "ss".
+@param  f_query Valid SQL query
+@return (mixed) Result returned by the server in the specified format
+@since  v0.1.00
+		"""
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->thread_query_exec (%s,%s,+f_query_params)- (#echo(__LINE__)#)" % ( f_answer,f_query ))
+		f_return= False
+
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		else:
+		#
+			try:
+			#
+				f_result_object = self.local.resource.execute (f_query,f_query_params)
+
+				if (f_answer == "ar"): f_return = f_result_object.rowcount
+				elif (f_answer == "co"): f_return = True
+				elif (f_answer == "ma"):
+				#
+					f_return = [ ]
+					f_row_array = f_result_object.fetchone ()
+
+					while (f_row_array != None):
+					#
+						f_column = 0
+						f_row_keys_array = f_row_array.keys ()
+
+						f_filtered_row_array = { }
+
+						for f_column_data in f_row_array:
+						#
+							f_filtered_row_array[f_row_keys_array[f_column]] = f_column_data
+							f_column += 1
+						#
+
+						f_return.append (f_filtered_row_array)
+						f_row_array = f_result_object.fetchone ()
+					#
+				#
+				elif (f_answer == "ms"):
+				#
+					f_return = [ ]
+					f_row_array = f_result_object.fetchone ()
+
+					while (f_row_array != None):
+					#
+						if (len (f_row_array) > 0):
+						#
+							f_row = ""
+
+							for f_column_data in f_row_array:
+							#
+								if (len (f_row) > 0): f_row += "\n%s" % f_column_data
+								else: f_row = f_column_data
+							#
+
+							f_return.append (f_row)
+						#
+
+						f_row_array = f_result_object.fetchone ()
+					#
+				#
+				elif (f_answer == "nr"):
+				#
+					f_row_array = f_result_object.fetchone ()
+					f_return = f_row_array[0]
+				#
+				elif (f_answer == "sa"):
+				#
+					f_return = { }
+					f_row_array = f_result_object.fetchone ()
+
+					if (f_row_array != None):
+					#
+						f_column = 0
+						f_row_keys_array = f_row_array.keys ()
+
+						for f_column_data in f_row_array:
+						#
+							f_return[f_row_keys_array[f_column]] = f_column_data
+							f_column += 1
+						#
+					#
+				#
+				elif (f_answer == "ss"):
+				#
+					f_return = ""
+					f_row_array = f_result_object.fetchone ()
+
+					if ((f_row_array != None) and (len (f_row_array) > 0)):
+					#
+						for f_column_data in f_row_array:
+						#
+							if (len (f_return) > 0): f_return += "\n%s" % f_column_data
+							else: f_return = f_column_data
+						#
+					#
+				#
+			#
+			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+		#
+
+		return f_return
 	#
 
 	def transaction_begin (self):

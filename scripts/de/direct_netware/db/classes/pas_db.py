@@ -175,27 +175,24 @@ Constructor __init__ (direct_db)
 		self.error_callback = f_error_callback
 		self.synchronized = Lock ()
 
-		direct_settings.py_del ()
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#)")
 		random.seed ()
 
 		if (direct_basic_functions.get().settings_get ("%s/settings/pas_db.xml" % f_settings['path_data'])):
 		#
-			if (f_settings.has_key ("db_driver")): self.db_driver_name = f_settings['db_driver']
+			if ("db_driver" in f_settings): self.db_driver_name = f_settings['db_driver']
 			else: self.db_driver_name = "sqlite"
 
-			if (not f_settings.has_key ("db_dbprefix")): f_settings['db_dbprefix'] = "pas_"
+			if (not "db_dbprefix" in f_settings): f_settings['db_dbprefix'] = "pas_"
 
 			if (f_peristent): f_settings['db_peristent'] = True
-			elif (not f_settings.has_key ("db_peristent")): f_settings['db_peristent'] = f_peristent
+			elif (not "db_peristent" in f_settings): f_settings['db_peristent'] = f_peristent
 			else: f_settings['db_peristent'] = False
 
 			self.db_driver = direct_plugin_hooks.call ("de.direct_netware.db.%s.get" % self.db_driver_name)
 			if (self.db_driver == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading the raw SQL handler",self.E_ERROR)
 		#
 		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading database settings",self.E_ERROR)
-
-		direct_basic_functions.py_del ()
 	#
 
 	def __del__ (self):
@@ -206,7 +203,6 @@ Destructor __del__ (direct_dbraw_sqlite)
 @since v0.1.00
 		"""
 
-		direct_debug.py_del ()
 		self.del_direct_db ()
 	#
 
@@ -218,6 +214,7 @@ Destructor del_direct_db (direct_db)
 @since v0.1.00
 		"""
 
+		direct_debug.py_del ()
 		self.db_driver = None
 	#
 
@@ -307,7 +304,6 @@ Defines a row limit for queries.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_limit (%i)- (#echo(__LINE__)#)" % f_limit)
-		f_return = False
 
 		if ((self.query_type == "delete") or (self.query_type == "select") or (self.query_type == "update")):
 		#
@@ -328,7 +324,6 @@ Defines an offset for queries.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_offset (%i)- (#echo(__LINE__)#)" % f_offset)
-		f_return = False
 
 		if (self.query_type == "select"):
 		#
@@ -414,13 +409,13 @@ attributes against SQL injection.
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\W").sub ("",f_value)
+			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
 			elif (f_type == "number"):
 			#
-				try: f_value = int (f_value)
+				try: f_value = "%i" % int (f_value)
 				except Exception,f_handled_exception:
 				#
-					try: f_value = float (f_value)
+					try: f_value = "%g" % float (f_value)
 					except Exception,f_handled_inner_exception: f_value = None
 				#
 			#
@@ -554,13 +549,13 @@ injection.
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\W").sub ("",f_value)
+			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
 			elif (f_type == "number"):
 			#
-				try: f_value = int (f_value)
+				try: f_value = "%i" % int (f_value)
 				except Exception,f_handled_exception:
 				#
-					try: f_value = float (f_value)
+					try: f_value = "%g" % float (f_value)
 					except Exception,f_handled_inner_exception: f_value = None
 				#
 			#
@@ -636,13 +631,13 @@ SQL injection.
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\W").sub ("",f_value)
+			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
 			elif (f_type == "number"):
 			#
-				try: f_value = int (f_value)
+				try: f_value = "%i" % int (f_value)
 				except Exception,f_handled_exception:
 				#
-					try: f_value = float (f_value)
+					try: f_value = "%g" % float (f_value)
 					except Exception,f_handled_inner_exception: f_value = None
 				#
 			#
@@ -1151,11 +1146,12 @@ Calls the ROLLBACK statement.
 	#
 
 	@staticmethod
-	def get ():
+	def get (f_count = True):
 	#
 		"""
 Get the direct_db singleton.
 
+@param  bool Count "get ()" request
 @return (direct_db) Object on success
 @since  v1.0.0
 		"""
@@ -1163,22 +1159,23 @@ Get the direct_db singleton.
 		global _direct_basic_db,_direct_basic_db_counter
 
 		if (_direct_basic_db == None): _direct_basic_db = direct_db ()
-		_direct_basic_db_counter += 1
+		if (f_count): _direct_basic_db_counter += 1
 
 		return _direct_basic_db
 	#
 
 	@staticmethod
-	def get_db ():
+	def get_db (f_count = True):
 	#
 		"""
 Get the direct_db singleton.
 
+@param  bool Count "get ()" request
 @return (direct_db) Object on success
 @since  v1.0.0
 		"""
 
-		return direct_db.get ()
+		return direct_db.get (f_count)
 	#
 
 	@staticmethod
