@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
-"""/*n// NOTE
+"""n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
 Python Application Services
@@ -18,7 +18,7 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 #echo(pasBasicVersion)#
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
-NOTE_END //n*/"""
+NOTE_END //n"""
 """
 We need a unified interface for communication with SQL-compatible database
 servers. This is the abstract interface.
@@ -40,9 +40,9 @@ from de.direct_netware.classes.pas_basic_functions import direct_basic_functions
 from de.direct_netware.classes.pas_debug import direct_debug
 from de.direct_netware.classes.pas_settings import direct_settings
 from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
-from de.direct_netware.plugins.classes.pas_pluginmanager import direct_plugin_hooks
-from threading import Lock
-import de.direct_netware.db,random,re
+from pas_pluginmanager import direct_plugin_hooks
+from threading import RLock
+import de.direct_netware.plugins.db,random,re
 
 _direct_basic_db = None
 _direct_basic_db_counter = 0
@@ -173,7 +173,7 @@ Constructor __init__ (direct_db)
 
 		self.debug = direct_debug.get ()
 		self.error_callback = f_error_callback
-		self.synchronized = Lock ()
+		self.synchronized = RLock ()
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#)")
 		random.seed ()
@@ -1145,7 +1145,6 @@ Calls the ROLLBACK statement.
 		else: return self.db_driver.transaction_rollback ()
 	#
 
-	@staticmethod
 	def get (f_count = True):
 	#
 		"""
@@ -1163,8 +1162,8 @@ Get the direct_db singleton.
 
 		return _direct_basic_db
 	#
+	get = staticmethod (get)
 
-	@staticmethod
 	def get_db (f_count = True):
 	#
 		"""
@@ -1177,8 +1176,8 @@ Get the direct_db singleton.
 
 		return direct_db.get (f_count)
 	#
+	get_db = staticmethod (get_db)
 
-	@staticmethod
 	def py_del ():
 	#
 		"""
@@ -1192,6 +1191,7 @@ The last "py_del ()" call will activate the Python singleton destructor.
 		_direct_basic_db_counter -= 1
 		if (_direct_basic_db_counter == 0): _direct_basic_db = None
 	#
+	py_del = staticmethod (py_del)
 #
 
 ##j## EOF

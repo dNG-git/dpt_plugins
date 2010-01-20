@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
-"""/*n// NOTE
+"""n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
 Python Application Services
@@ -18,7 +18,7 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 #echo(pasBasicVersion)#
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
-NOTE_END //n*/"""
+NOTE_END //n"""
 """
 We need a unified interface for communication with SQL-compatible database
 servers. This one is designed for SQLite.
@@ -39,9 +39,10 @@ servers. This one is designed for SQLite.
 from de.direct_netware.classes.pas_debug import direct_debug
 from de.direct_netware.classes.pas_settings import direct_settings
 from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
-import re,sqlite3,threading
+from threading import local
+import re,sqlite3
 
-class direct_dbraw_sqlite (threading.Thread):
+class direct_dbraw_sqlite (object):
 #
 	"""
 This class has been designed to be used with a SQLite database.
@@ -84,18 +85,6 @@ Function to be called for logging exceptions and other errors
 	"""
 Local data handle
 	"""
-	query_cache = ""
-	"""
-This variable saves a built SQL query
-	"""
-	query_parameters = ( )
-	"""
-This variable saves a built SQL query parameters
-	"""
-	synchronized = None
-	"""
-Lock used in multi thread environments.
-	"""
 
 	"""
 ----------------------------------------------------------------------------
@@ -111,18 +100,9 @@ Constructor __init__ (direct_dbraw_sqlite)
 @since v0.1.00
 		"""
 
-		super (direct_dbraw_sqlite,self).__init__ ()
-
-		self.activity = [ "","",None ]
 		self.debug = direct_debug.get ()
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->__construct (direct_dbraw_sqlite)- (#echo(__LINE__)#)")
-		self.query_cache = ""
-		self.query_parameters = ( )
-		self.synchronized = threading.Lock ()
-		self.waiter_event_command = threading.Event ()
-		self.waiter_event_result = threading.Event ()
-
-		self.start ()
+		self.local = local ()
 	#
 
 	def __del__ (self):
@@ -148,65 +128,6 @@ Destructor del_direct_dbraw_sqlite (direct_dbraw_sqlite)
 		self.disconnect ()
 	#
 
-	def run (self):
-	#
-		"""
-Worker loop
-
-@since v1.0.0
-		"""
-
-		self.local = threading.local ()
-		self.local.resource = None
-		self.local.transactions = 0
-		self.waiter_event_command.wait ()
-
-		while (self.activity != None):
-		#
-			if (len (self.activity) > 0): self.activity[2] = self.dispatch (self.activity[0],self.activity[1],self.activity[2])
-			self.waiter_event_command.clear ()
-			self.waiter_event_result.set ()
-
-			self.waiter_event_command.wait ()
-		#
-	#
-
-	def command (self,f_command,f_data,f_return):
-	#
-		"""
-Requests a command to be executed on the database thread.
-
-@return (boolean) True on success
-@since  v0.1.00
-		"""
-
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#)")
-
-		if (self.is_alive ()):
-		#
-			self.synchronized.acquire ()
-
-			self.activity = [ f_command,f_data,f_return ]
-
-			self.waiter_event_command.set ()
-			self.waiter_event_result.wait ()
-			self.waiter_event_result.clear ()
-
-			f_return = self.activity[2]
-
-			if ((f_command == "disconnect") and (self.is_alive ())):
-			#
-				self.activity = None
-				self.waiter_event_command.set ()
-			#
-			else: self.activity = [ "","",None ]
-
-			self.synchronized.release ()
-		#
-
-		return f_return
-	#
-
 	def connect (self):
 	#
 		"""
@@ -218,9 +139,26 @@ Opens the connection to a database server and selects a database.
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->connect ()- (#echo(__LINE__)#)")
 
+		f_return = True
 		f_settings = direct_settings.get ()
+		self.thread_local_check ()
 
-		if ("db_dbfile" in f_settings): f_return = self.command ("connect",f_settings['db_dbfile'],False)
+		if ("db_dbfile" in f_settings):
+		#
+			if (self.local.resource == None):
+			#
+				try:
+				#
+					self.local.resource = sqlite3.connect (f_settings['db_dbfile'],isolation_level = None,detect_types = sqlite3.PARSE_DECLTYPES)
+					self.local.resource.row_factory = sqlite3.Row
+				#
+				except Exception,f_handled_exception:
+				#
+					f_return = False
+					self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+				#
+			#
+		#
 		else: f_return = False
 
 		return f_return
@@ -236,77 +174,15 @@ Closes an active database connection to the server.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->disconnect ()- (#echo(__LINE__)#)")
-		return self.command ("disconnect","",False)
-	#
 
-	def dispatch (self,f_command,f_data,f_return):
-	#
-		"""
-Dispatches database commands to the local thread.
+		self.thread_local_check ()
 
-@return (boolean) True on success
-@since  v0.1.00
-		"""
-
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#)")
-
-		if (f_command == "connect"):
+		if (self.local.resource != None):
 		#
-			if (self.local.resource == None):
-			#
-				try:
-				#
-					self.local.resource = sqlite3.connect (f_data,isolation_level = None,detect_types = sqlite3.PARSE_DECLTYPES)
-					self.local.resource.row_factory = sqlite3.Row
-					f_return = True
-				#
-				except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
-			#
-			else: f_return = True
+			self.local.resource.close ()
+			return True
 		#
-		elif (f_command == "disconnect"):
-		#
-			if (self.local.resource != None):
-			#
-				self.local.resource.close ()
-				f_return = True
-			#
-		#
-		elif (f_command == "query_exec"): f_return = self.thread_query_exec (f_data[0],f_data[1],f_data[2])
-		elif ((f_command == "resource_check") and (self.local.resource != None)): f_return = True
-		elif (f_command == "transaction_begin"):
-		#
-			if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
-			else:
-			#
-				f_return = True
-				if (self.local.transactions < 1): self.local.resource.isolation_level = "DEFERRED"
-				self.local.transactions += 1
-			#
-		#
-		elif ((f_command == "transaction_commit") or (f_command == "transaction_rollback")):
-		#
-			if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
-			else:
-			#
-				try:
-				#
-					if (self.local.transactions < 2):
-					#
-						if (f_command == "transaction_commit"): self.local.resource.commit ()
-						else: self.local.resource.rollback ()
-
-						self.local.resource.isolation_level = None
-					#
-
-					f_return = True
-					self.local.transactions -= 1
-				#
-				except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
-			#
-		#
-
-		return f_return
+		else: return False
 	#
 
 	def query_build (self,f_data):
@@ -324,26 +200,28 @@ Builds a valid SQL query for SQLite and executes it.
 
 		f_continue_check = True
 		f_xml_object = direct_xml_bridge.get_xml_bridge ()
-		self.query_parameters = ( )
+		self.thread_local_check ()
+
+		self.local.query_parameters = ( )
 
 		if (f_data['type'] == "delete"):
 		#
 			if (len (f_data['table']) < 1): f_continue_check = False
-			self.query_cache = "DELETE FROM "
+			self.local.query_cache = "DELETE FROM "
 		#
 		elif (f_data['type'] == "insert"):
 		#
 			if ((len (f_data['set_attributes']) < 1) and (len (f_data['values']) < 1)): f_continue_check = False
 			if (len (f_data['table']) < 1): f_continue_check = False
 
-			self.query_cache = "INSERT INTO "
+			self.local.query_cache = "INSERT INTO "
 		#
 		elif (f_data['type'] == "replace"):
 		#
 			if (len (f_data['table']) < 1): f_continue_check = False
 			if (len (f_data['values']) < 1): f_continue_check = False
 
-			self.query_cache = "REPLACE INTO "
+			self.local.query_cache = "REPLACE INTO "
 		#
 		elif (f_data['type'] == "select"):
 		#
@@ -352,36 +230,36 @@ Builds a valid SQL query for SQLite and executes it.
 
 			if (len (f_data['table']) < 1): f_continue_check = False
 
-			self.query_cache = "SELECT "
+			self.local.query_cache = "SELECT "
 		#
 		elif (f_data['type'] == "update"):
 		#
 			if ((len (f_data['set_attributes']) < 1) and (len (f_data['values']) < 1)): f_continue_check = False
 			if (len (f_data['table']) < 1): f_continue_check = False
 
-			self.query_cache = "UPDATE "
+			self.local.query_cache = "UPDATE "
 		#
 		else: f_continue_check = False
 
 		if (f_continue_check):
 		#
-			if ((f_data['type'] == "select") and (len (f_data['attributes']) > 0)): self.query_cache += "%s FROM " % self.query_build_attributes (f_data['attributes'])
-			self.query_cache += f_data['table']
+			if ((f_data['type'] == "select") and (len (f_data['attributes']) > 0)): self.local.query_cache += "%s FROM " % self.query_build_attributes (f_data['attributes'])
+			self.local.query_cache += f_data['table']
 
 			if ((f_data['type'] == "select") and (len (f_data['joins']) > 0)):
 			#
 				for f_join_array in f_data['joins']:
 				#
-					if (f_join_array['type'] == "cross-join"): self.query_cache += " CROSS JOIN %s" % f_join_array['table']
-					elif (f_join_array['type'] == "inner-join"): self.query_cache += " INNER JOIN %s ON " % f_join_array['table']
-					elif (f_join_array['type'] == "left-outer-join"): self.query_cache += " LEFT OUTER JOIN %s ON " % f_join_array['table']
-					elif (f_join_array['type'] == "natural-join"): self.query_cache += " NATURAL JOIN %s" % f_join_array['table']
-					elif (f_join_array['type'] == "right-outer-join"): self.query_cache += " RIGHT OUTER JOIN %s ON " % f_join_array['table']
+					if (f_join_array['type'] == "cross-join"): self.local.query_cache += " CROSS JOIN %s" % f_join_array['table']
+					elif (f_join_array['type'] == "inner-join"): self.local.query_cache += " INNER JOIN %s ON " % f_join_array['table']
+					elif (f_join_array['type'] == "left-outer-join"): self.local.query_cache += " LEFT OUTER JOIN %s ON " % f_join_array['table']
+					elif (f_join_array['type'] == "natural-join"): self.local.query_cache += " NATURAL JOIN %s" % f_join_array['table']
+					elif (f_join_array['type'] == "right-outer-join"): self.local.query_cache += " RIGHT OUTER JOIN %s ON " % f_join_array['table']
 
 					if (len (f_join_array['requirements']) > 0):
 					#
 						f_xml_node_array = f_xml_object.xml2array (f_join_array['requirements'],f_strict_standard = False)
-						if ("sqlconditions" in f_xml_node_array): self.query_cache += self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
+						if ("sqlconditions" in f_xml_node_array): self.local.query_cache += self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
 					#
 				#
 			#
@@ -392,8 +270,8 @@ Builds a valid SQL query for SQLite and executes it.
 
 				if ("sqlvalues" in f_xml_node_array):
 				#
-					if (f_data['type'] == "update"): self.query_cache += " SET %s" % self.query_build_set_attributes (f_xml_node_array['sqlvalues'])
-					else: self.query_cache += " %s" % self.query_build_values_keys (f_xml_node_array['sqlvalues'])
+					if (f_data['type'] == "update"): self.local.query_cache += " SET %s" % self.query_build_set_attributes (f_xml_node_array['sqlvalues'])
+					else: self.local.query_cache += " %s" % self.query_build_values_keys (f_xml_node_array['sqlvalues'])
 				#
 			#
 
@@ -408,7 +286,7 @@ Builds a valid SQL query for SQLite and executes it.
 					if ("sqlconditions" in f_xml_node_array):
 					#
 						f_where_defined = True
-						self.query_cache += " WHERE %s" % self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
+						self.local.query_cache += " WHERE %s" % self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
 					#
 				#
 
@@ -420,19 +298,19 @@ Builds a valid SQL query for SQLite and executes it.
 
 						if ("sqlconditions" in f_xml_node_array):
 						#
-							if (f_where_defined): self.query_cache += " AND (%s)" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
-							else: self.query_cache += " WHERE %s" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
+							if (f_where_defined): self.local.query_cache += " AND (%s)" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
+							else: self.local.query_cache += " WHERE %s" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
 						#
 					#
 
-					if (len (f_data['grouping']) > 0): self.query_cache += " GROUP BY %s" % ",".join (f_data['grouping'])
+					if (len (f_data['grouping']) > 0): self.local.query_cache += " GROUP BY %s" % ",".join (f_data['grouping'])
 				#
 			#
 
 			if ((f_data['type'] == "select") and (len (f_data['ordering']) > 0)):
 			#
 				f_xml_node_array = f_xml_object.xml2array (f_data['ordering'],f_strict_standard = False)
-				if ("sqlordering" in f_xml_node_array): self.query_cache += " ORDER BY %s" % self.query_build_ordering (f_xml_node_array['sqlordering'])
+				if ("sqlordering" in f_xml_node_array): self.local.query_cache += " ORDER BY %s" % self.query_build_ordering (f_xml_node_array['sqlordering'])
 			#
 
 			if ((f_data['type'] == "insert") or (f_data['type'] == "replace")):
@@ -448,17 +326,17 @@ Builds a valid SQL query for SQLite and executes it.
 							if (len (f_values_keys) > 0): f_values_keys += ",?"
 							else: f_values_keys += "?"
 
-							self.query_parameters += ( f_values_key[(f_values_key.find (".") + 1):], )
+							self.local.query_parameters += ( f_values_key[(f_values_key.find (".") + 1):], )
 						#
 
-						self.query_cache += " (%s)" % f_values_keys
+						self.local.query_cache += " (%s)" % f_values_keys
 					#
 				#
 
 				if (len (f_data['values']) > 0):
 				#
 					f_xml_node_array = f_xml_object.xml2array (f_data['values'],f_strict_standard = False)
-					if ("sqlvalues" in f_xml_node_array): self.query_cache += " VALUES %s" % self.query_build_values (f_xml_node_array['sqlvalues'])
+					if ("sqlvalues" in f_xml_node_array): self.local.query_cache += " VALUES %s" % self.query_build_values (f_xml_node_array['sqlvalues'])
 				#
 			#
 
@@ -466,19 +344,19 @@ Builds a valid SQL query for SQLite and executes it.
 			#
 				if (f_data['limit']):
 				#
-					self.query_cache += " LIMIT ?"
-					self.query_parameters += ( f_data['limit'], )
+					self.local.query_cache += " LIMIT ?"
+					self.local.query_parameters += ( f_data['limit'], )
 				#
 
 				if (f_data['offset']):
 				#
-					self.query_cache += " OFFSET ?"
-					self.query_parameters += ( f_data['offset'], )
+					self.local.query_cache += " OFFSET ?"
+					self.local.query_parameters += ( f_data['offset'], )
 				#
 			#
 
-			if (f_data['answer'] == "sql"): f_return = self.query_cache
-			else: f_return = self.query_exec (f_data['answer'],self.query_cache,self.query_parameters)
+			if (f_data['answer'] == "sql"): f_return = self.local.query_cache
+			else: f_return = self.query_exec (f_data['answer'],self.local.query_cache,self.local.query_parameters)
 		#
 		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class->query_build ()- (#echo(__LINE__)#) reporting: Required definition elements are missing",self.E_WARNING)
 
@@ -603,8 +481,8 @@ Creates a WHERE string including sublevel conditions.
 						#
 							f_return += " %s ?" % f_requirement_array['attributes']['operator']
 
-							if ((f_requirement_array['attributes']['type'] == "string") and (len (f_requirement_array['value']) > 1) and (f_requirement_array['value'][0:1] == "'")): self.query_parameters += ( f_requirement_array['value'][1:-1], )
-							else: self.query_parameters += ( f_requirement_array['value'], )
+							if ((f_requirement_array['attributes']['type'] == "string") and (len (f_requirement_array['value']) > 1) and (f_requirement_array['value'][0:1] == "'")): self.local.query_parameters += ( f_requirement_array['value'][1:-1], )
+							else: self.local.query_parameters += ( f_requirement_array['value'], )
 						#
 						elif (f_requirement_array['attributes']['type'] == "string"): f_return += " %s ''" % f_requirement_array['attributes']['operator']
 						else: f_return += " %s NULL" % f_requirement_array['attributes']['operator']
@@ -747,7 +625,7 @@ Don't forget to check the buffer $f_word_buffer
 					#
 						if (len (f_return) > 0): f_return += " OR "
 						f_return += "%s LIKE ?" % f_attribute
-						self.query_parameters += ( f_search_term, )
+						self.local.query_parameters += ( f_search_term, )
 					#
 				#
 			#
@@ -785,8 +663,8 @@ Builds the SQL attributes and values list for UPDATE.
 				#
 					f_return += "?"
 
-					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.query_parameters += ( f_attribute_array['value'][1:-1], )
-					else: self.query_parameters += ( f_attribute_array['value'], )
+					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_array['value'][1:-1], )
+					else: self.local.query_parameters += ( f_attribute_array['value'], )
 				#
 				elif (f_attribute_array['attributes']['type'] == "string"): f_return += "''"
 				else: f_return += "NULL"
@@ -835,8 +713,8 @@ Builds the SQL VALUES part of a query.
 					#
 						f_return += "?"
 
-						if ((f_value_array['attributes']['type'] == "string") and (len (f_value_array['value']) > 1) and (f_value_array['value'][0:1] == "'")): self.query_parameters += ( f_value_array['value'][1:-1], )
-						else: self.query_parameters += ( f_value_array['value'], )
+						if ((f_value_array['attributes']['type'] == "string") and (len (f_value_array['value']) > 1) and (f_value_array['value'][0:1] == "'")): self.local.query_parameters += ( f_value_array['value'][1:-1], )
+						else: self.local.query_parameters += ( f_value_array['value'], )
 					#
 					elif (f_value_array['attributes']['type'] == "string"): f_return += "''"
 					else: f_return += "NULL"
@@ -878,8 +756,8 @@ Builds the SQL attributes and values list for INSERT.
 				#
 					f_values.append ("?")
 
-					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.query_parameters += ( f_attribute_array['value'][1:-1], )
-					else: self.query_parameters += ( f_attribute_array['value'], )
+					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_array['value'][1:-1], )
+					else: self.local.query_parameters += ( f_attribute_array['value'], )
 				#
 				elif (f_attribute_array['attributes']['type'] == "string"): f_values.append ("''")
 				else: f_values.append ("NULL")
@@ -906,74 +784,9 @@ format via f_answer.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_exec (%s,%s,+f_query_params)- (#echo(__LINE__)#)" % ( f_answer,f_query ))
-		return self.command ("query_exec",[ f_answer,f_query,f_query_params ],False)
-	#
 
-	def optimize (self,f_table):
-	#
-		"""
-Optimizes a given table.
-
-@param  f_table Name of the table
-@return (boolean) True on success
-@since  v0.1.00
-		"""
-
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->optimize (%s)- (#echo(__LINE__)#)" % f_table)
-
-		if (self.command ("resource_check","",False)): return True
-		else:
-		#
-			self.trigger_error ("#echo(__FILEPATH__)# -db_class->optimize ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
-			return False
-		#
-	#
-
-	def secure (self,f_data):
-	#
-		"""
-Secures a given string to protect against SQL injections.
-
-@param  f_data Input array or string; $f_data is NULL if there is no valid
-        SQL resource. 
-@return (mixed) Modified input or None on error
-@since  v0.1.00
-		"""
-
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->secure (+f_data)- (#echo(__LINE__)#)")
-
-		if (self.command ("resource_check","",False)): return f_data
-		else: return None
-	#
-
-	def set_trigger (self,f_function = None):
-	#
-		"""
-Set a given function to be called for each exception or error.
-
-@param f_function Python function to be called
-@since v0.1.00
-		"""
-
-		self.error_callback = f_function
-	#
-
-	def thread_query_exec (self,f_answer,f_query,f_query_params):
-	#
-		"""
-Transmits an SQL query and returns the result in a developer specified
-format via f_answer.
-
-@param  f_answer Defines the requested type that should be returned
-        The following types are supported: "ar", "co", "ma", "ms", "nr",
-        "sa" or "ss".
-@param  f_query Valid SQL query
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
-		"""
-
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->thread_query_exec (%s,%s,+f_query_params)- (#echo(__LINE__)#)" % ( f_answer,f_query ))
-		f_return= False
+		f_return = False
+		self.thread_local_check ()
 
 		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 		else:
@@ -1072,6 +885,79 @@ format via f_answer.
 		return f_return
 	#
 
+	def optimize (self,f_table):
+	#
+		"""
+Optimizes a given table.
+
+@param  f_table Name of the table
+@return (boolean) True on success
+@since  v0.1.00
+		"""
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->optimize (%s)- (#echo(__LINE__)#)" % f_table)
+
+		self.thread_local_check ()
+
+		if (self.local.resource == None):
+		#
+			self.trigger_error ("#echo(__FILEPATH__)# -db_class->optimize ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+			return False
+		#
+		else: return True
+	#
+
+	def secure (self,f_data):
+	#
+		"""
+Secures a given string to protect against SQL injections.
+
+@param  f_data Input array or string; $f_data is NULL if there is no valid
+        SQL resource. 
+@return (mixed) Modified input or None on error
+@since  v0.1.00
+		"""
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->secure (+f_data)- (#echo(__LINE__)#)")
+
+		self.thread_local_check ()
+
+		if (self.local.resource == None): return None
+		else: return f_data
+	#
+
+	def set_trigger (self,f_function = None):
+	#
+		"""
+Set a given function to be called for each exception or error.
+
+@param f_function Python function to be called
+@since v0.1.00
+		"""
+
+		self.error_callback = f_function
+	#
+
+	def thread_local_check (self):
+	#
+		"""
+Constructor __init__ (direct_dbraw_sqlite)
+
+@since v0.1.00
+		"""
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->thread_local_check ()- (#echo(__LINE__)#)")
+
+		if (not hasattr (self.local,"resource")):
+		#
+			self.local.query_cache = ""
+			self.local.query_parameters = ( )
+			self.local.resource = None
+			self.local.transactions = 0
+			self.connect ()
+		#
+	#
+
 	def transaction_begin (self):
 	#
 		"""
@@ -1082,7 +968,19 @@ Starts a transaction.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_begin ()- (#echo(__LINE__)#)")
-		return self.command ("transaction_begin","",False)
+
+		f_return = False
+		self.thread_local_check ()
+
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		else:
+		#
+			f_return = True
+			if (self.local.transactions < 1): self.local.resource.isolation_level = "DEFERRED"
+			self.local.transactions += 1
+		#
+
+		return f_return
 	#
 
 	def transaction_commit (self):
@@ -1095,7 +993,28 @@ Commits all transaction statements.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_commit ()- (#echo(__LINE__)#)")
-		return self.command ("transaction_commit","",False)
+
+		f_return = False
+		self.thread_local_check ()
+
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		else:
+		#
+			try:
+			#
+				if (self.local.transactions < 2):
+				#
+					self.local.resource.commit ()
+					self.local.resource.isolation_level = None
+				#
+
+				f_return = True
+				self.local.transactions -= 1
+			#
+			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+		#
+
+		return f_return
 	#
 
 	def transaction_rollback (self):
@@ -1108,7 +1027,28 @@ Calls the ROLLBACK statement.
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_rollback ()- (#echo(__LINE__)#)")
-		return self.command ("transaction_rollback","",False)
+
+		f_return = False
+		self.thread_local_check ()
+
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		else:
+		#
+			try:
+			#
+				if (self.local.transactions < 2):
+				#
+					self.local.resource.rollback ()
+					self.local.resource.isolation_level = None
+				#
+
+				f_return = True
+				self.local.transactions -= 1
+			#
+			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+		#
+
+		return f_return
 	#
 
 	def trigger_error (self,f_message,f_type = None):

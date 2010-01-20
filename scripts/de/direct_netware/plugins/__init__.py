@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
-"""/*n// NOTE
+"""n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
 Python Application Services
@@ -18,7 +18,7 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 #echo(pasBasicVersion)#
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
-NOTE_END //n*/"""
+NOTE_END //n"""
 """
 de.direct_netware.plugins.__init__
 
@@ -35,7 +35,7 @@ de.direct_netware.plugins.__init__
             W3C (R) Software License
 """
 
-from classes.pas_pluginmanager import direct_pluginmanager
+from de.direct_netware.classes.pas_pluginmanager import direct_pluginmanager
 
 direct_pluginmanager ("de.direct_netware.plugins")
 

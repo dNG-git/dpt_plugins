@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
-"""/*n// NOTE
+"""n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
 Python Application Services
@@ -18,10 +18,9 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 #echo(pasBasicVersion)#
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
-NOTE_END //n*/"""
+NOTE_END //n"""
 """
-We need a unified interface for communication with SQL-compatible database
-servers. This is the abstract interface.
+de.direct_netware.plugins.db.__init__
 
 @internal   We are using epydoc (JavaDoc style) to automate the
             documentation process for creating the Developer's Manual.
@@ -36,32 +35,8 @@ servers. This is the abstract interface.
             W3C (R) Software License
 """
 
-from classes.pas_dbraw_sqlite import direct_dbraw_sqlite
-from de.direct_netware.plugins.classes.pas_pluginmanager import direct_plugin_hooks
+from de.direct_netware.classes.pas_pluginmanager import direct_pluginmanager
 
-def direct_basic_dbraw_sqlite_init (f_params = None,f_last_return = None):
-#
-	"""
-Returns an instance to handle SQLite databases.
-
-@param  f_params Parameter specified calling "direct_pluginmanager".
-@param  f_last_return The return value from the last hook called.
-@return (direct_dbraw_sqlite) Instance on success
-@since  v1.0.0
-	"""
-
-	return direct_dbraw_sqlite ()
-#
-
-def plugin_registration ():
-#
-	"""
-Register direct_plugin_hooks
-
-@since v1.0.0
-	"""
-
-	direct_plugin_hooks.register ("de.direct_netware.db.sqlite.get",direct_basic_dbraw_sqlite_init,f_exclusive = True)
-#
+direct_pluginmanager ("de.direct_netware.plugins.db")
 
 ##j## EOF
