@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
+"""
+We need a unified interface for communication with SQL-compatible database
+servers. This one is designed for SQLite.
+
+@internal   We are using epydoc (JavaDoc style) to automate the
+            documentation process for creating the Developer's Manual.
+            Use the following line to ensure 76 character sizes:
+----------------------------------------------------------------------------
+@author     direct Netware Group
+@copyright  (C) direct Netware Group - All rights reserved
+@package    pas_basic
+@subpackage db
+@since      v0.1.00
+@license    http://www.direct-netware.de/redirect.php?licenses;w3c
+            W3C (R) Software License
+"""
 """n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
@@ -19,28 +35,14 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
 NOTE_END //n"""
-"""
-We need a unified interface for communication with SQL-compatible database
-servers. This one is designed for SQLite.
 
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;w3c
-            W3C (R) Software License
-"""
-
-from de.direct_netware.classes.pas_debug import direct_debug
-from de.direct_netware.classes.pas_settings import direct_settings
-from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
+from os import path
 from threading import local
 import re,sqlite3
+
+from .pas_globals import direct_globals
+from .pas_pythonback import direct_str
+from .pas_xml_bridge import direct_xml_bridge
 
 class direct_dbraw_sqlite (object):
 #
@@ -100,8 +102,8 @@ Constructor __init__ (direct_dbraw_sqlite)
 @since v0.1.00
 		"""
 
-		self.debug = direct_debug.get ()
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->__construct (direct_dbraw_sqlite)- (#echo(__LINE__)#)")
+		self.debug = direct_globals['debug']
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.__init__ (direct_dbraw_sqlite)- (#echo(__LINE__)#)")
 		self.local = local ()
 	#
 
@@ -124,7 +126,6 @@ Destructor del_direct_dbraw_sqlite (direct_dbraw_sqlite)
 @since v0.1.00
 		"""
 
-		direct_debug.py_del ()
 		self.disconnect ()
 	#
 
@@ -133,29 +134,28 @@ Destructor del_direct_dbraw_sqlite (direct_dbraw_sqlite)
 		"""
 Opens the connection to a database server and selects a database.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->connect ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.connect ()- (#echo(__LINE__)#)")
 
 		f_return = True
-		f_settings = direct_settings.get ()
 		self.thread_local_check ()
 
-		if ("db_dbfile" in f_settings):
+		if ("db_dbfile" in direct_globals['settings']):
 		#
 			if (self.local.resource == None):
 			#
 				try:
 				#
-					self.local.resource = sqlite3.connect (f_settings['db_dbfile'],isolation_level = None,detect_types = sqlite3.PARSE_DECLTYPES)
+					self.local.resource = sqlite3.connect ((path.normpath ("{0}/{1}".format (direct_globals['settings']['path_base'],direct_globals['settings']['db_dbfile']))),isolation_level = None,detect_types = sqlite3.PARSE_DECLTYPES)
 					self.local.resource.row_factory = sqlite3.Row
 				#
-				except Exception,f_handled_exception:
+				except Exception as f_handled_exception:
 				#
 					f_return = False
-					self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+					self.trigger_error (("#echo(__FILEPATH__)# -db_class.connect ()- (#echo(__LINE__)#) reporting: {0!r}".format (f_handled_exception)),self.E_ERROR)
 				#
 			#
 		#
@@ -169,11 +169,11 @@ Opens the connection to a database server and selects a database.
 		"""
 Closes an active database connection to the server.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->disconnect ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.disconnect ()- (#echo(__LINE__)#)")
 
 		self.thread_local_check ()
 
@@ -185,57 +185,57 @@ Closes an active database connection to the server.
 		else: return False
 	#
 
-	def query_build (self,f_data):
+	def query_build (self,data):
 	#
 		"""
 Builds a valid SQL query for SQLite and executes it.
 
-@param  f_data Array containing query specific information.
+@param  data Dictionary containing query specific information.
 @return (mixed) Result returned by the server in the specified format
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build (+f_data)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build (data)- (#echo(__LINE__)#)")
 		f_return = False
 
 		f_continue_check = True
-		f_xml_object = direct_xml_bridge.get_xml_bridge ()
+		f_xml_object = direct_xml_bridge.py_get ()
 		self.thread_local_check ()
 
 		self.local.query_parameters = ( )
 
-		if (f_data['type'] == "delete"):
+		if (data['type'] == "delete"):
 		#
-			if (len (f_data['table']) < 1): f_continue_check = False
+			if (len (data['table']) < 1): f_continue_check = False
 			self.local.query_cache = "DELETE FROM "
 		#
-		elif (f_data['type'] == "insert"):
+		elif (data['type'] == "insert"):
 		#
-			if ((len (f_data['set_attributes']) < 1) and (len (f_data['values']) < 1)): f_continue_check = False
-			if (len (f_data['table']) < 1): f_continue_check = False
+			if ((len (data['set_attributes']) < 1) and (len (data['values']) < 1)): f_continue_check = False
+			if (len (data['table']) < 1): f_continue_check = False
 
 			self.local.query_cache = "INSERT INTO "
 		#
-		elif (f_data['type'] == "replace"):
+		elif (data['type'] == "replace"):
 		#
-			if (len (f_data['table']) < 1): f_continue_check = False
-			if (len (f_data['values']) < 1): f_continue_check = False
+			if (len (data['table']) < 1): f_continue_check = False
+			if (len (data['values']) < 1): f_continue_check = False
 
 			self.local.query_cache = "REPLACE INTO "
 		#
-		elif (f_data['type'] == "select"):
+		elif (data['type'] == "select"):
 		#
-			if (f_data['answer'] == "nr"): f_data['attributes'] = [ "count-rows(*)" ]
-			elif (len (f_data['attributes']) < 1): f_continue_check = False
+			if (data['answer'] == "nr"): data['attributes'] = [ "count-rows(*)" ]
+			elif (len (data['attributes']) < 1): f_continue_check = False
 
-			if (len (f_data['table']) < 1): f_continue_check = False
+			if (len (data['table']) < 1): f_continue_check = False
 
 			self.local.query_cache = "SELECT "
 		#
-		elif (f_data['type'] == "update"):
+		elif (data['type'] == "update"):
 		#
-			if ((len (f_data['set_attributes']) < 1) and (len (f_data['values']) < 1)): f_continue_check = False
-			if (len (f_data['table']) < 1): f_continue_check = False
+			if ((len (data['set_attributes']) < 1) and (len (data['values']) < 1)): f_continue_check = False
+			if (len (data['table']) < 1): f_continue_check = False
 
 			self.local.query_cache = "UPDATE "
 		#
@@ -243,85 +243,85 @@ Builds a valid SQL query for SQLite and executes it.
 
 		if (f_continue_check):
 		#
-			if ((f_data['type'] == "select") and (len (f_data['attributes']) > 0)): self.local.query_cache += "%s FROM " % self.query_build_attributes (f_data['attributes'])
-			self.local.query_cache += f_data['table']
+			if ((data['type'] == "select") and (len (data['attributes']) > 0)): self.local.query_cache += "{0} FROM ".format (self.query_build_attributes (data['attributes']))
+			self.local.query_cache += data['table']
 
-			if ((f_data['type'] == "select") and (len (f_data['joins']) > 0)):
+			if ((data['type'] == "select") and (len (data['joins']) > 0)):
 			#
-				for f_join_array in f_data['joins']:
+				for f_join_dict in data['joins']:
 				#
-					if (f_join_array['type'] == "cross-join"): self.local.query_cache += " CROSS JOIN %s" % f_join_array['table']
-					elif (f_join_array['type'] == "inner-join"): self.local.query_cache += " INNER JOIN %s ON " % f_join_array['table']
-					elif (f_join_array['type'] == "left-outer-join"): self.local.query_cache += " LEFT OUTER JOIN %s ON " % f_join_array['table']
-					elif (f_join_array['type'] == "natural-join"): self.local.query_cache += " NATURAL JOIN %s" % f_join_array['table']
-					elif (f_join_array['type'] == "right-outer-join"): self.local.query_cache += " RIGHT OUTER JOIN %s ON " % f_join_array['table']
+					if (f_join_dict['type'] == "cross-join"): self.local.query_cache += " CROSS JOIN {0}".format (f_join_dict['table'])
+					elif (f_join_dict['type'] == "inner-join"): self.local.query_cache += " INNER JOIN {0} ON ".format (f_join_dict['table'])
+					elif (f_join_dict['type'] == "left-outer-join"): self.local.query_cache += " LEFT OUTER JOIN {0} ON ".format (f_join_dict['table'])
+					elif (f_join_dict['type'] == "natural-join"): self.local.query_cache += " NATURAL JOIN {0}".format (f_join_dict['table'])
+					elif (f_join_dict['type'] == "right-outer-join"): self.local.query_cache += " RIGHT OUTER JOIN {0} ON ".format (f_join_dict['table'])
 
-					if (len (f_join_array['requirements']) > 0):
+					if (len (f_join_dict['requirements']) > 0):
 					#
-						f_xml_node_array = f_xml_object.xml2array (f_join_array['requirements'],f_strict_standard = False)
-						if ("sqlconditions" in f_xml_node_array): self.local.query_cache += self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
+						f_xml_node_dict = f_xml_object.xml2array (f_join_dict['requirements'],strict_standard = False)
+						if ("sqlconditions" in f_xml_node_dict): self.local.query_cache += self.query_build_row_conditions_walker (f_xml_node_dict['sqlconditions'])
 					#
 				#
 			#
 
-			if (((f_data['type'] == "insert") or (f_data['type'] == "replace") or (f_data['type'] == "update")) and (len (f_data['set_attributes']) > 0)):
+			if (((data['type'] == "insert") or (data['type'] == "replace") or (data['type'] == "update")) and (len (data['set_attributes']) > 0)):
 			#
-				f_xml_node_array = f_xml_object.xml2array (f_data['set_attributes'],f_strict_standard = False)
+				f_xml_node_dict = f_xml_object.xml2array (data['set_attributes'],strict_standard = False)
 
-				if ("sqlvalues" in f_xml_node_array):
+				if ("sqlvalues" in f_xml_node_dict):
 				#
-					if (f_data['type'] == "update"): self.local.query_cache += " SET %s" % self.query_build_set_attributes (f_xml_node_array['sqlvalues'])
-					else: self.local.query_cache += " %s" % self.query_build_values_keys (f_xml_node_array['sqlvalues'])
+					if (data['type'] == "update"): self.local.query_cache += " SET {0}".format (self.query_build_set_attributes (f_xml_node_dict['sqlvalues']))
+					else: self.local.query_cache += " {0}".format (self.query_build_values_keys (f_xml_node_dict['sqlvalues']))
 				#
 			#
 
-			if ((f_data['type'] == "delete") or (f_data['type'] == "select") or (f_data['type'] == "update")):
+			if ((data['type'] == "delete") or (data['type'] == "select") or (data['type'] == "update")):
 			#
 				f_where_defined = False
 
-				if (len (f_data['row_conditions']) > 0):
+				if (len (data['row_conditions']) > 0):
 				#
-					f_xml_node_array = f_xml_object.xml2array (f_data['row_conditions'],f_strict_standard = False)
+					f_xml_node_dict = f_xml_object.xml2array (data['row_conditions'],strict_standard = False)
 
-					if ("sqlconditions" in f_xml_node_array):
+					if ("sqlconditions" in f_xml_node_dict):
 					#
 						f_where_defined = True
-						self.local.query_cache += " WHERE %s" % self.query_build_row_conditions_walker (f_xml_node_array['sqlconditions'])
+						self.local.query_cache += " WHERE {0}".format (self.query_build_row_conditions_walker (f_xml_node_dict['sqlconditions']))
 					#
 				#
 
-				if (f_data['type'] == "select"):
+				if (data['type'] == "select"):
 				#
-					if (len (f_data['search_conditions']) > 0):
+					if (len (data['search_conditions']) > 0):
 					#
-						f_xml_node_array = f_xml_object.xml2array (f_data['search_conditions'],f_strict_standard = False)
+						f_xml_node_dict = f_xml_object.xml2array (data['search_conditions'],strict_standard = False)
 
-						if ("sqlconditions" in f_xml_node_array):
+						if ("sqlconditions" in f_xml_node_dict):
 						#
-							if (f_where_defined): self.local.query_cache += " AND (%s)" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
-							else: self.local.query_cache += " WHERE %s" % self.query_build_search_conditions (f_xml_node_array['sqlconditions'])
+							if (f_where_defined): self.local.query_cache += " AND ({0})".format (self.query_build_search_conditions (f_xml_node_dict['sqlconditions']))
+							else: self.local.query_cache += " WHERE {0}".format (self.query_build_search_conditions (f_xml_node_dict['sqlconditions']))
 						#
 					#
 
-					if (len (f_data['grouping']) > 0): self.local.query_cache += " GROUP BY %s" % ",".join (f_data['grouping'])
+					if (len (data['grouping']) > 0): self.local.query_cache += " GROUP BY {0}".format (",".join (data['grouping']))
 				#
 			#
 
-			if ((f_data['type'] == "select") and (len (f_data['ordering']) > 0)):
+			if ((data['type'] == "select") and (len (data['ordering']) > 0)):
 			#
-				f_xml_node_array = f_xml_object.xml2array (f_data['ordering'],f_strict_standard = False)
-				if ("sqlordering" in f_xml_node_array): self.local.query_cache += " ORDER BY %s" % self.query_build_ordering (f_xml_node_array['sqlordering'])
+				f_xml_node_dict = f_xml_object.xml2array (data['ordering'],strict_standard = False)
+				if ("sqlordering" in f_xml_node_dict): self.local.query_cache += " ORDER BY {0}".format (self.query_build_ordering (f_xml_node_dict['sqlordering']))
 			#
 
-			if ((f_data['type'] == "insert") or (f_data['type'] == "replace")):
+			if ((data['type'] == "insert") or (data['type'] == "replace")):
 			#
-				if (f_data['values_keys']):
+				if (data['values_keys']):
 				#
-					if (type (f_data['values_keys']) == list):
+					if (type (data['values_keys']) == list):
 					#
 						f_values_keys = ""
 
-						for f_values_key in f_data['values_keys']:
+						for f_values_key in data['values_keys']:
 						#
 							if (len (f_values_keys) > 0): f_values_keys += ",?"
 							else: f_values_keys += "?"
@@ -329,58 +329,58 @@ Builds a valid SQL query for SQLite and executes it.
 							self.local.query_parameters += ( f_values_key[(f_values_key.find (".") + 1):], )
 						#
 
-						self.local.query_cache += " (%s)" % f_values_keys
+						self.local.query_cache += " ({0})".format (f_values_keys)
 					#
 				#
 
-				if (len (f_data['values']) > 0):
+				if (len (data['values']) > 0):
 				#
-					f_xml_node_array = f_xml_object.xml2array (f_data['values'],f_strict_standard = False)
-					if ("sqlvalues" in f_xml_node_array): self.local.query_cache += " VALUES %s" % self.query_build_values (f_xml_node_array['sqlvalues'])
+					f_xml_node_dict = f_xml_object.xml2array (data['values'],strict_standard = False)
+					if ("sqlvalues" in f_xml_node_dict): self.local.query_cache += " VALUES {0}".format (self.query_build_values (f_xml_node_dict['sqlvalues']))
 				#
 			#
 
-			if (f_data['type'] == "select"):
+			if (data['type'] == "select"):
 			#
-				if (f_data['limit']):
+				if (data['limit']):
 				#
 					self.local.query_cache += " LIMIT ?"
-					self.local.query_parameters += ( f_data['limit'], )
+					self.local.query_parameters += ( data['limit'], )
 				#
 
-				if (f_data['offset']):
+				if (data['offset']):
 				#
 					self.local.query_cache += " OFFSET ?"
-					self.local.query_parameters += ( f_data['offset'], )
+					self.local.query_parameters += ( data['offset'], )
 				#
 			#
 
-			if (f_data['answer'] == "sql"): f_return = self.local.query_cache
-			else: f_return = self.query_exec (f_data['answer'],self.local.query_cache,self.local.query_parameters)
+			if (data['answer'] == "sql"): f_return = self.local.query_cache
+			else: f_return = self.query_exec (data['answer'],self.local.query_cache,self.local.query_parameters)
 		#
-		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class->query_build ()- (#echo(__LINE__)#) reporting: Required definition elements are missing",self.E_WARNING)
+		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class.query_build ()- (#echo(__LINE__)#) reporting: Required definition elements are missing",self.E_WARNING)
 
 		return f_return
 	#
 
-	def query_build_attributes (self,f_attributes_array):
+	def query_build_attributes (self,attributes_list):
 	#
 		"""
 Builds the SQL attributes list of a query.
 
-@param  f_attributes_array Array of attributes
-@return (string) Attributes list with translated function names
+@param  attributes_list List of attributes
+@return (str) Attributes list with translated function names
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_attributes (+f_attributes_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_attributes (attributes_list)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if ((type (f_attributes_array) == list) and (len (f_attributes_array) > 0)):
+		if ((type (attributes_list) == list) and (len (attributes_list) > 0)):
 		#
 			f_re_attribute = re.compile ("^(.*?)\\((.*?)\\)(.*?)$")
 
-			for f_attribute in f_attributes_array:
+			for f_attribute in attributes_list:
 			#
 				if (len (f_return) > 0): f_return += ", "
 				f_result_object = f_re_attribute.match (f_attribute)
@@ -388,9 +388,9 @@ Builds the SQL attributes list of a query.
 				if (f_result_object == None): f_return += f_attribute
 				else:
 				#
-					if (f_result_object.group (1) == "count-rows"): f_return += "COUNT(%s)%s" % ( f_result_object.group (2),f_result_object.group (3) )
-					elif (f_result_object.group (1) == "sum-rows"): f_return += "SUM(%s)%s" % ( f_result_object.group (2),f_result_object.group (3) )
-					else: f_return += "%s(%s)%s" % ( f_result_object.group (1),f_result_object.group (2),f_result_object.group (3) )
+					if (f_result_object.group (1) == "count-rows"): f_return += "COUNT({0}){1}".format (f_result_object.group (2),(f_result_object.group (3)))
+					elif (f_result_object.group (1) == "sum-rows"): f_return += "SUM({0}){1}".format (f_result_object.group (2),(f_result_object.group (3)))
+					else: f_return += "{0}({1}){2}".format (f_result_object.group (1),(f_result_object.group (2)),(f_result_object.group (3)))
 				#
 			#
 		#
@@ -398,94 +398,94 @@ Builds the SQL attributes list of a query.
 		return f_return
 	#
 
-	def query_build_ordering (self,f_ordering_list):
+	def query_build_ordering (self,ordering_dict):
 	#
 		"""
 Builds the SQL ORDER BY part of a query.
 
-@param  f_ordering_list ORDER BY list given as a XML array tree
-@return (string) Valid SQL ORDER BY definition
+@param  ordering_dict ORDER BY list given as a XML dictionary tree
+@return (str) Valid SQL ORDER BY definition
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_ordering (+f_ordering_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_ordering (ordering_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_ordering_list) == dict):
+		if (type (ordering_dict) == dict):
 		#
-			if ("xml.item" in f_ordering_list): del (f_ordering_list['xml.item'])
+			if ("xml.item" in ordering_dict): del (ordering_dict['xml.item'])
 
-			for f_ordering_key in f_ordering_list:
+			for f_ordering_key in ordering_dict:
 			#
-				f_ordering_array = f_ordering_list[f_ordering_key]
+				f_ordering_dict = ordering_dict[f_ordering_key]
 				if (len (f_return) > 0): f_return += ", "
 
-				if (f_ordering_array['attributes']['type'] == "desc"): f_return += "%s DESC" % f_ordering_array['attributes']['attribute']
-				else: f_return += "%s ASC" % f_ordering_array['attributes']['attribute']
+				if (f_ordering_dict['attributes']['type'] == "desc"): f_return += "{0} DESC".format (f_ordering_dict['attributes']['attribute'])
+				else: f_return += "{0} ASC".format (f_ordering_dict['attributes']['attribute'])
 			#
 		#
 
 		return f_return
 	#
 
-	def query_build_row_conditions_walker (self,f_requirements_array):
+	def query_build_row_conditions_walker (self,requirements_dict):
 	#
 		"""
 Creates a WHERE string including sublevel conditions.
 
-@param  f_requirements_array WHERE definitions given as a XML array tree
-@return (string) Valid SQL WHERE definition
+@param  requirements_dict WHERE definitions given as a XML dictionary tree
+@return (str) Valid SQL WHERE definition
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_row_conditions_walker (+f_requirements_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_row_conditions_walker (requirements_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_requirements_array) == dict):
+		if (type (requirements_dict) == dict):
 		#
-			if ("xml.item" in f_requirements_array): del (f_requirements_array['xml.item'])
+			if ("xml.item" in requirements_dict): del (requirements_dict['xml.item'])
 
-			for f_requirement_key in f_requirements_array:
+			for f_requirement_key in requirements_dict:
 			#
-				f_requirement_array = f_requirements_array[f_requirement_key]
+				f_requirement_dict = requirements_dict[f_requirement_key]
 
-				if (type (f_requirement_array) == dict):
+				if (type (f_requirement_dict) == dict):
 				#
-					if ("xml.item" in f_requirement_array):
+					if ("xml.item" in f_requirement_dict):
 					#
 						if (len (f_return) > 0):
 						#
-							if (("condition" in f_requirement_array['xml.item']['attributes']) and (f_requirement_array['xml.item']['attributes']['condition'] == "or")): f_return += " OR "
+							if (("condition" in f_requirement_dict['xml.item']['attributes']) and (f_requirement_dict['xml.item']['attributes']['condition'] == "or")): f_return += " OR "
 							else: f_return += " AND "
 						#
 
-						if (len (f_requirement_array) > 2): f_return += "(%s)" % self.query_build_row_conditions_walker (f_requirement_array)
-						else: f_return += self.query_build_row_conditions_walker (f_requirement_array)
+						if (len (f_requirement_dict) > 2): f_return += "({0})".format (self.query_build_row_conditions_walker (f_requirement_dict))
+						else: f_return += self.query_build_row_conditions_walker (f_requirement_dict)
 					#
-					elif (f_requirement_array['value'] != "*"):
+					elif (f_requirement_dict['value'] != "*"):
 					#
-						if (not "type" in f_requirement_array['attributes']): f_requirement_array['attributes']['type'] = "string"
+						if (not "type" in f_requirement_dict['attributes']): f_requirement_dict['attributes']['type'] = "string"
 
 						if (len (f_return) > 0):
 						#
-							if (("condition" in f_requirement_array['attributes']) and (f_requirement_array['attributes']['condition'] == "or")): f_return += " OR "
+							if (("condition" in f_requirement_dict['attributes']) and (f_requirement_dict['attributes']['condition'] == "or")): f_return += " OR "
 							else: f_return += " AND "
 						#
 
-						if (not "operator" in f_requirement_array['attributes']): f_requirement_array['attributes']['operator'] = ""
-						if ((f_requirement_array['attributes']['operator'] != "!=") and (f_requirement_array['attributes']['operator'] != "<") and (f_requirement_array['attributes']['operator'] != "<=") and (f_requirement_array['attributes']['operator'] != ">") and (f_requirement_array['attributes']['operator'] != ">=")): f_requirement_array['attributes']['operator'] = "=="
-						f_return += "%s" % f_requirement_array['attributes']['attribute']
+						if (not "operator" in f_requirement_dict['attributes']): f_requirement_dict['attributes']['operator'] = ""
+						if ((f_requirement_dict['attributes']['operator'] != "!=") and (f_requirement_dict['attributes']['operator'] != "<") and (f_requirement_dict['attributes']['operator'] != "<=") and (f_requirement_dict['attributes']['operator'] != ">") and (f_requirement_dict['attributes']['operator'] != ">=")): f_requirement_dict['attributes']['operator'] = "=="
+						f_return += "{0}".format (f_requirement_dict['attributes']['attribute'])
 
-						if ("null" in f_requirement_array['attributes']): f_return += " %s NULL" % f_requirement_array['attributes']['operator']
-						elif (len (f_requirement_array['value']) > 0):
+						if ("null" in f_requirement_dict['attributes']): f_return += " {0} NULL".format (f_requirement_dict['attributes']['operator'])
+						elif (len (f_requirement_dict['value']) > 0):
 						#
-							f_return += " %s ?" % f_requirement_array['attributes']['operator']
+							f_return += " {0} ?".format (f_requirement_dict['attributes']['operator'])
 
-							if ((f_requirement_array['attributes']['type'] == "string") and (len (f_requirement_array['value']) > 1) and (f_requirement_array['value'][0:1] == "'")): self.local.query_parameters += ( f_requirement_array['value'][1:-1], )
-							else: self.local.query_parameters += ( f_requirement_array['value'], )
+							if ((f_requirement_dict['attributes']['type'] == "string") and (len (f_requirement_dict['value']) > 1) and (f_requirement_dict['value'][0:1] == "'")): self.local.query_parameters += ( f_requirement_dict['value'][1:-1], )
+							else: self.local.query_parameters += ( f_requirement_dict['value'], )
 						#
-						elif (f_requirement_array['attributes']['type'] == "string"): f_return += " %s ''" % f_requirement_array['attributes']['operator']
-						else: f_return += " %s NULL" % f_requirement_array['attributes']['operator']
+						elif (f_requirement_dict['attributes']['type'] == "string"): f_return += " {0} ''".format (f_requirement_dict['attributes']['operator'])
+						else: f_return += " {0} NULL".format (f_requirement_dict['attributes']['operator'])
 					#
 				#
 			#
@@ -494,61 +494,61 @@ Creates a WHERE string including sublevel conditions.
 		return f_return
 	#
 
-	def query_build_search_conditions (self,f_conditions_array):
+	def query_build_search_conditions (self,conditions_dict):
 	#
 		"""
 Creates search requests
 
-@param  array $f_conditions_array WHERE definitions given as a XML array tree
-@return (string) Valid SQL WHERE definition
+@param  conditions_dict WHERE definitions given as a XML dictionary tree
+@return (str) Valid SQL WHERE definition
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_search_conditions (+f_conditions_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_search_conditions (conditions_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_conditions_array) == dict):
+		if (type (conditions_dict) == dict):
 		#
-			f_attributes_array = [ ]
+			f_attributes_list = [ ]
 			f_search_term = ""
 
-			if ("xml.item" in f_conditions_array): del (f_conditions_array['xml.item'])
+			if ("xml.item" in conditions_dict): del (conditions_dict['xml.item'])
 
-			for f_condition_name in f_conditions_array:
+			for f_condition_name in conditions_dict:
 			#
-				f_condition_array = f_conditions_array[f_condition_name]
+				f_condition_dict = conditions_dict[f_condition_name]
 
-				if (type (f_condition_array) == dict): f_dict = True
+				if (type (f_condition_dict) == dict): f_dict = True
 				else: f_dict = False
 
-				if ((f_dict) and ("xml.mtree" in f_condition_array)): f_mtree = True
+				if ((f_dict) and ("xml.mtree" in f_condition_dict)): f_mtree = True
 				else: f_mtree = False
 
 				if ((f_condition_name == "attribute") and (f_mtree)):
 				#
-					for f_condition_attribute_key in f_condition_array:
+					for f_condition_attribute_key in f_condition_dict:
 					#
-						f_condition_attribute_array = f_condition_array[f_condition_attribute_key]
-						if ("value" in f_condition_attribute_array): f_attributes_array.append (f_condition_attribute_array['value'])
+						f_condition_attribute_dict = f_condition_dict[f_condition_attribute_key]
+						if ("value" in f_condition_attribute_dict): f_attributes_list.append (f_condition_attribute_dict['value'])
 					#
 				#
 				elif ((f_condition_name == "searchterm") and (f_mtree)):
 				#
-					for f_condition_searchterm_key in f_condition_array:
+					for f_condition_searchterm_key in f_condition_dict:
 					#
-						f_condition_searchterm_array = f_condition_array[f_condition_searchterm_key]
-						if (("value" in f_condition_searchterm_array) and (len (f_condition_searchterm_array['value']) > 0)): f_search_term += f_condition_searchterm_array['value']
+						f_condition_searchterm_dict = f_condition_dict[f_condition_searchterm_key]
+						if (("value" in f_condition_searchterm_dict) and (len (f_condition_searchterm_dict['value']) > 0)): f_search_term += f_condition_searchterm_dict['value']
 					#
 				#
-				elif ((f_dict) and ("tag" in f_condition_array)):
+				elif ((f_dict) and ("tag" in f_condition_dict)):
 				#
 
-					if (f_condition_array['tag'] == "attribute"): f_attributes_array.append (f_condition_array['value'])
-					elif ((f_condition_array['tag'] == "searchterm") and (len (f_condition_array['value']) > 0)): f_search_term += f_condition_array['value']
+					if (f_condition_dict['tag'] == "attribute"): f_attributes_list.append (f_condition_dict['value'])
+					elif ((f_condition_dict['tag'] == "searchterm") and (len (f_condition_dict['value']) > 0)): f_search_term += f_condition_dict['value']
 				#
 			#
 
-			if ((len (f_attributes_array) > 0) and (len (f_search_term) > 0)):
+			if ((len (f_attributes_list) > 0) and (len (f_search_term) > 0)):
 			#
 				"""
 ----------------------------------------------------------------------------
@@ -559,8 +559,8 @@ Result is: [0] => %Test% [1] => %Test1 Test2 Test3% [2] => %Test4%
 ----------------------------------------------------------------------------
 				"""
 
-				f_search_term = re.compile("^\\*",re.M).sub ("%%",f_search_term)
-				f_search_term = re.compile("(\\w)\\*").sub ("\\1%%",f_search_term)
+				f_search_term = re.compile("^\\*",re.M).sub ("%",f_search_term)
+				f_search_term = re.compile("(\\w)\\*").sub ("\\1%",f_search_term)
 				f_search_term = f_search_term.replace (" OR "," ")
 				f_search_term = f_search_term.replace (" NOT "," ")
 				f_search_term = f_search_term.replace ("HIGH ","")
@@ -568,7 +568,7 @@ Result is: [0] => %Test% [1] => %Test1 Test2 Test3% [2] => %Test4%
 
 				f_words = f_search_term.split (" ")
 				f_and_check = False
-				f_search_term_array = [ ]
+				f_search_term_list = [ ]
 				f_single_check = False
 				f_word_buffer = ""
 
@@ -590,16 +590,16 @@ Result is: [0] => %Test% [1] => %Test1 Test2 Test3% [2] => %Test4%
 						if (f_and_check):
 						#
 							f_and_check = False
-							f_word_buffer = "%%%s%%" % f_word_buffer.strip ()
-							f_search_term_array.append (f_word_buffer.replace ("%%%%","%%"))
+							f_word_buffer = "%{0}%".format (f_word_buffer.strip ())
+							f_search_term_list.append (f_word_buffer.replace ("%%","%"))
 							f_word_buffer = f_word
 						#
 						else:
 						#
 							if (len (f_word_buffer) > 0):
 							#
-								f_word_buffer = "%%%s%%" % f_word_buffer.strip ()
-								f_search_term_array.append (f_word_buffer.replace ("%%%%","%%"))
+								f_word_buffer = "%{0}%".format (f_word_buffer.strip ())
+								f_search_term_list.append (f_word_buffer.replace ("%%","%"))
 							#
 
 							f_word_buffer = f_word
@@ -615,16 +615,16 @@ Don't forget to check the buffer $f_word_buffer
 
 				if (len (f_word_buffer) > 0):
 				#
-					f_word_buffer = "%%%s%%" % f_word_buffer.strip ()
-					f_search_term_array.append (f_word_buffer.replace ("%%%%","%%"))
+					f_word_buffer = "%{0}%".format (f_word_buffer.strip ())
+					f_search_term_list.append (f_word_buffer.replace ("%%","%"))
 				#
 
-				for f_attribute in f_attributes_array:
+				for f_attribute in f_attributes_list:
 				#
-					for f_search_term in f_search_term_array:
+					for f_search_term in f_search_term_list:
 					#
 						if (len (f_return) > 0): f_return += " OR "
-						f_return += "%s LIKE ?" % f_attribute
+						f_return += "{0} LIKE ?".format (f_attribute)
 						self.local.query_parameters += ( f_search_term, )
 					#
 				#
@@ -634,39 +634,39 @@ Don't forget to check the buffer $f_word_buffer
 		return f_return
 	#
 
-	def query_build_set_attributes (self,f_attributes_array):
+	def query_build_set_attributes (self,attributes_dict):
 	#
 		"""
 Builds the SQL attributes and values list for UPDATE.
 
-@param  f_attributes_array Attributes given as a XML array tree
-@return (string) Attributes list with translated function names
+@param  attributes_dict Attributes given as a XML dictionary tree
+@return (str) Attributes list with translated function names
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_set_attributes (+f_attributes_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_set_attributes (attributes_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_attributes_array) == dict):
+		if (type (attributes_dict) == dict):
 		#
-			if ("xml.item" in f_attributes_array): del (f_attributes_array['xml.item'])
+			if ("xml.item" in attributes_dict): del (attributes_dict['xml.item'])
 
-			for f_attribute_key in f_attributes_array:
+			for f_attribute_key in attributes_dict:
 			#
-				f_attribute_array = f_attributes_array[f_attribute_key]
+				f_attribute_dict = attributes_dict[f_attribute_key]
 
-				if (len (f_return) > 0): f_return += ", %s=" % f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):]
-				else: f_return += "%s=" % f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):]
+				if (len (f_return) > 0): f_return += ", {0}=".format (f_attribute_dict['attributes']['attribute'][(f_attribute_dict['attributes']['attribute'].find (".") + 1):])
+				else: f_return += "{0}=".format (f_attribute_dict['attributes']['attribute'][(f_attribute_dict['attributes']['attribute'].find (".") + 1):])
 
-				if ("null" in f_attribute_array['attributes']): f_return += "NULL"
-				elif (len (f_attribute_array['value']) > 0):
+				if ("null" in f_attribute_dict['attributes']): f_return += "NULL"
+				elif (len (f_attribute_dict['value']) > 0):
 				#
 					f_return += "?"
 
-					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_array['value'][1:-1], )
-					else: self.local.query_parameters += ( f_attribute_array['value'], )
+					if ((f_attribute_dict['attributes']['type'] == "string") and (len (f_attribute_dict['value']) > 1) and (f_attribute_dict['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_dict['value'][1:-1], )
+					else: self.local.query_parameters += ( f_attribute_dict['value'], )
 				#
-				elif (f_attribute_array['attributes']['type'] == "string"): f_return += "''"
+				elif (f_attribute_dict['attributes']['type'] == "string"): f_return += "''"
 				else: f_return += "NULL"
 			#
 		#
@@ -674,32 +674,32 @@ Builds the SQL attributes and values list for UPDATE.
 		return f_return
 	#
 
-	def query_build_values (self,f_values_array):
+	def query_build_values (self,values_dict):
 	#
 		"""
 Builds the SQL VALUES part of a query.
 
-@param  f_values_array WHERE definitions given as a XML array tree
-@return (string) Valid SQL VALUES definition
+@param  values_dict WHERE definitions given as a XML dictionary tree
+@return (str) Valid SQL VALUES definition
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_values (+f_values_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_values (values_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_values_array) == dict):
+		if (type (values_dict) == dict):
 		#
-			if ("xml.item" in f_values_array): del (f_values_array['xml.item'])
+			if ("xml.item" in values_dict): del (values_dict['xml.item'])
 			f_bracket_check = False
 
-			for f_value_key in f_values_array:
+			for f_value_key in values_dict:
 			#
-				f_value_array = f_values_array[f_value_key]
+				f_value_dict = values_dict[f_value_key]
 
-				if ("xml.item" in f_value_array):
+				if ("xml.item" in f_value_dict):
 				#
 					if (len (f_return) > 0): f_return += ","
-					f_return += self.query_build_values (f_value_array)
+					f_return += self.query_build_values (f_value_dict)
 				#
 				else:
 				#
@@ -708,15 +708,15 @@ Builds the SQL VALUES part of a query.
 					if (len (f_return) > 0): f_return += ","
 					else: f_return += "("
 
-					if ("null" in f_value_array['attributes']): f_return += "NULL"
-					elif (len (f_value_array['value']) > 0):
+					if ("null" in f_value_dict['attributes']): f_return += "NULL"
+					elif (len (f_value_dict['value']) > 0):
 					#
 						f_return += "?"
 
-						if ((f_value_array['attributes']['type'] == "string") and (len (f_value_array['value']) > 1) and (f_value_array['value'][0:1] == "'")): self.local.query_parameters += ( f_value_array['value'][1:-1], )
-						else: self.local.query_parameters += ( f_value_array['value'], )
+						if ((f_value_dict['attributes']['type'] == "string") and (len (f_value_dict['value']) > 1) and (f_value_dict['value'][0:1] == "'")): self.local.query_parameters += ( f_value_dict['value'][1:-1], )
+						else: self.local.query_parameters += ( f_value_dict['value'], )
 					#
-					elif (f_value_array['attributes']['type'] == "string"): f_return += "''"
+					elif (f_value_dict['attributes']['type'] == "string"): f_return += "''"
 					else: f_return += "NULL"
 				#
 			#
@@ -727,226 +727,231 @@ Builds the SQL VALUES part of a query.
 		return f_return
 	#
 
-	def query_build_values_keys (self,f_attributes_array):
+	def query_build_values_keys (self,attributes_dict):
 	#
 		"""
 Builds the SQL attributes and values list for INSERT.
 
-@param  f_attributes_array Attributes given as a XML array tree
-@return (string) Attributes list with translated function names
+@param  attributes_dict Attributes given as a XML dictionary tree
+@return (str) Attributes list with translated function names
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_build_values_keys (+f_attributes_array)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_values_keys (attributes_dict)- (#echo(__LINE__)#)")
 		f_return = ""
 
-		if (type (f_attributes_array) == dict):
+		if (type (attributes_dict) == dict):
 		#
-			if ("xml.item" in f_attributes_array): del (f_attributes_array['xml.item'])
+			if ("xml.item" in attributes_dict): del (attributes_dict['xml.item'])
 			f_keys = [ ]
 			f_values = [ ]
 
-			for f_attribute_key in f_attributes_array:
+			for f_attribute_key in attributes_dict:
 			#
-				f_attribute_array = f_attributes_array[f_attribute_key]
-				f_keys.append (f_attribute_array['attributes']['attribute'][(f_attribute_array['attributes']['attribute'].find (".") + 1):])
+				f_attribute_dict = attributes_dict[f_attribute_key]
+				f_keys.append (f_attribute_dict['attributes']['attribute'][(f_attribute_dict['attributes']['attribute'].find (".") + 1):])
 
-				if ("null" in f_attribute_array['attributes']): f_values.append ("NULL")
-				elif (len (f_attribute_array['value']) > 0):
+				if ("null" in f_attribute_dict['attributes']): f_values.append ("NULL")
+				elif (len (f_attribute_dict['value']) > 0):
 				#
 					f_values.append ("?")
 
-					if ((f_attribute_array['attributes']['type'] == "string") and (len (f_attribute_array['value']) > 1) and (f_attribute_array['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_array['value'][1:-1], )
-					else: self.local.query_parameters += ( f_attribute_array['value'], )
+					if ((f_attribute_dict['attributes']['type'] == "string") and (len (f_attribute_dict['value']) > 1) and (f_attribute_dict['value'][0:1] == "'")): self.local.query_parameters += ( f_attribute_dict['value'][1:-1], )
+					else: self.local.query_parameters += ( f_attribute_dict['value'], )
 				#
-				elif (f_attribute_array['attributes']['type'] == "string"): f_values.append ("''")
+				elif (f_attribute_dict['attributes']['type'] == "string"): f_values.append ("''")
 				else: f_values.append ("NULL")
 			#
 
-			f_return = "(%s) VALUES (%s)" % ( (",".join (f_keys)),(",".join (f_values)) )
+			f_return = "({0}) VALUES ({1})".format (",".join (f_keys),(",".join (f_values)))
 		#
 
 		return f_return
 	#
 
-	def query_exec (self,f_answer,f_query,f_query_params):
+	def query_exec (self,answer,query,query_params):
 	#
 		"""
 Transmits an SQL query and returns the result in a developer specified
-format via f_answer.
+format via answer.
 
-@param  f_answer Defines the requested type that should be returned
+@param  answer Defines the requested type that should be returned
         The following types are supported: "ar", "co", "ma", "ms", "nr",
         "sa" or "ss".
-@param  f_query Valid SQL query
+@param  query Valid SQL query
 @return (mixed) Result returned by the server in the specified format
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_exec (%s,%s,+f_query_params)- (#echo(__LINE__)#)" % ( f_answer,f_query ))
+		answer = direct_str (answer)
+		query = direct_str (query)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_exec ({0},{1},query_params)- (#echo(__LINE__)#)".format (answer,query))
 
 		f_return = False
 		self.thread_local_check ()
 
-		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.query_exec ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 		else:
 		#
 			try:
 			#
-				f_result_object = self.local.resource.execute (f_query,f_query_params)
+				f_result_object = self.local.resource.execute (query,query_params)
 
-				if (f_answer == "ar"): f_return = f_result_object.rowcount
-				elif (f_answer == "co"): f_return = True
-				elif (f_answer == "ma"):
+				if (answer == "ar"): f_return = f_result_object.rowcount
+				elif (answer == "co"): f_return = True
+				elif (answer == "ma"):
 				#
 					f_return = [ ]
-					f_row_array = f_result_object.fetchone ()
+					f_row = f_result_object.fetchone ()
 
-					while (f_row_array != None):
+					while (f_row != None):
 					#
 						f_column = 0
-						f_row_keys_array = f_row_array.keys ()
+						f_row_keys_list = f_row.keys ()
 
-						f_filtered_row_array = { }
+						f_filtered_row_dict = { }
 
-						for f_column_data in f_row_array:
+						for f_column_data in f_row:
 						#
-							f_filtered_row_array[f_row_keys_array[f_column]] = f_column_data
+							f_filtered_row_dict[f_row_keys_list[f_column]] = f_column_data
 							f_column += 1
 						#
 
-						f_return.append (f_filtered_row_array)
-						f_row_array = f_result_object.fetchone ()
+						f_return.append (f_filtered_row_dict)
+						f_row = f_result_object.fetchone ()
 					#
 				#
-				elif (f_answer == "ms"):
+				elif (answer == "ms"):
 				#
 					f_return = [ ]
-					f_row_array = f_result_object.fetchone ()
+					f_row = f_result_object.fetchone ()
 
-					while (f_row_array != None):
+					while (f_row != None):
 					#
-						if (len (f_row_array) > 0):
+						if (len (f_row) > 0):
 						#
 							f_row = ""
 
-							for f_column_data in f_row_array:
+							for f_column_data in f_row:
 							#
-								if (len (f_row) > 0): f_row += "\n%s" % f_column_data
+								if (len (f_row) > 0): f_row += "\n{0}".format (f_column_data)
 								else: f_row = f_column_data
 							#
 
 							f_return.append (f_row)
 						#
 
-						f_row_array = f_result_object.fetchone ()
+						f_row = f_result_object.fetchone ()
 					#
 				#
-				elif (f_answer == "nr"):
+				elif (answer == "nr"):
 				#
-					f_row_array = f_result_object.fetchone ()
-					f_return = f_row_array[0]
+					f_row = f_result_object.fetchone ()
+					f_return = f_row[0]
 				#
-				elif (f_answer == "sa"):
+				elif (answer == "sa"):
 				#
 					f_return = { }
-					f_row_array = f_result_object.fetchone ()
+					f_row = f_result_object.fetchone ()
 
-					if (f_row_array != None):
+					if (f_row != None):
 					#
 						f_column = 0
-						f_row_keys_array = f_row_array.keys ()
+						f_row_keys_list = f_row.keys ()
 
-						for f_column_data in f_row_array:
+						for f_column_data in f_row:
 						#
-							f_return[f_row_keys_array[f_column]] = f_column_data
+							f_return[f_row_keys_list[f_column]] = f_column_data
 							f_column += 1
 						#
 					#
 				#
-				elif (f_answer == "ss"):
+				elif (answer == "ss"):
 				#
 					f_return = ""
-					f_row_array = f_result_object.fetchone ()
+					f_row = f_result_object.fetchone ()
 
-					if ((f_row_array != None) and (len (f_row_array) > 0)):
+					if ((f_row != None) and (len (f_row) > 0)):
 					#
-						for f_column_data in f_row_array:
+						for f_column_data in f_row:
 						#
-							if (len (f_return) > 0): f_return += "\n%s" % f_column_data
+							if (len (f_return) > 0): f_return += "\n{0}".format (f_column_data)
 							else: f_return = f_column_data
 						#
 					#
 				#
 			#
-			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+			except Exception as f_handled_exception: self.trigger_error (("#echo(__FILEPATH__)# -db_class.query_exec ()- (#echo(__LINE__)#) reporting: {0!r}".format (f_handled_exception)),self.E_ERROR)
 		#
 
 		return f_return
 	#
 
-	def optimize (self,f_table):
+	def optimize (self,table):
 	#
 		"""
 Optimizes a given table.
 
-@param  f_table Name of the table
-@return (boolean) True on success
+@param  table Name of the table
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->optimize (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.optimize ({0})- (#echo(__LINE__)#)".format (table))
 
 		self.thread_local_check ()
 
 		if (self.local.resource == None):
 		#
-			self.trigger_error ("#echo(__FILEPATH__)# -db_class->optimize ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+			self.trigger_error ("#echo(__FILEPATH__)# -db_class.optimize ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 			return False
 		#
 		else: return True
 	#
 
-	def secure (self,f_data):
+	def secure (self,data):
 	#
 		"""
 Secures a given string to protect against SQL injections.
 
-@param  f_data Input array or string; $f_data is NULL if there is no valid
-        SQL resource. 
+@param  data Input array or string
 @return (mixed) Modified input or None on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->secure (+f_data)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.secure (data)- (#echo(__LINE__)#)")
 
 		self.thread_local_check ()
 
 		if (self.local.resource == None): return None
-		else: return f_data
+		else: return direct_str (data)
 	#
 
-	def set_trigger (self,f_function = None):
+	def set_trigger (self,py_function = None):
 	#
 		"""
 Set a given function to be called for each exception or error.
 
-@param f_function Python function to be called
+@param py_function Python function to be called
 @since v0.1.00
 		"""
 
-		self.error_callback = f_function
+		self.error_callback = py_function
 	#
 
 	def thread_local_check (self):
 	#
 		"""
-Constructor __init__ (direct_dbraw_sqlite)
+For thread safety some variables are defined per thread. This method makes
+sure that these variables are defined.
 
 @since v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->thread_local_check ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.thread_local_check ()- (#echo(__LINE__)#)")
 
 		if (not hasattr (self.local,"resource")):
 		#
@@ -963,16 +968,16 @@ Constructor __init__ (direct_dbraw_sqlite)
 		"""
 Starts a transaction.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_begin ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_begin ()- (#echo(__LINE__)#)")
 
 		f_return = False
 		self.thread_local_check ()
 
-		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.transaction_begin ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 		else:
 		#
 			f_return = True
@@ -988,16 +993,16 @@ Starts a transaction.
 		"""
 Commits all transaction statements.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_commit ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_commit ()- (#echo(__LINE__)#)")
 
 		f_return = False
 		self.thread_local_check ()
 
-		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.transaction_commit ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 		else:
 		#
 			try:
@@ -1011,7 +1016,7 @@ Commits all transaction statements.
 				f_return = True
 				self.local.transactions -= 1
 			#
-			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+			except Exception as f_handled_exception: self.trigger_error (("#echo(__FILEPATH__)# -db_class.transaction_commit ()- (#echo(__LINE__)#) reporting: {0!r}".format (f_handled_exception)),self.E_ERROR)
 		#
 
 		return f_return
@@ -1022,16 +1027,16 @@ Commits all transaction statements.
 		"""
 Calls the ROLLBACK statement.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->transaction_rollback ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_rollback ()- (#echo(__LINE__)#)")
 
 		f_return = False
 		self.thread_local_check ()
 
-		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
+		if (self.local.resource == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.transaction_rollback ()- (#echo(__LINE__)#) reporting: Database resource invalid",self.E_WARNING)
 		else:
 		#
 			try:
@@ -1045,24 +1050,24 @@ Calls the ROLLBACK statement.
 				f_return = True
 				self.local.transactions -= 1
 			#
-			except Exception,f_handled_exception: self.trigger_error ("#echo(__FILEPATH__)# -db_class->dispatch ()- (#echo(__LINE__)#) reporting: %s" % f_handled_exception,self.E_ERROR)
+			except Exception as f_handled_exception: self.trigger_error (("#echo(__FILEPATH__)# -db_class.transaction_rollback- (#echo(__LINE__)#) reporting: {0!r}".format (f_handled_exception)),self.E_ERROR)
 		#
 
 		return f_return
 	#
 
-	def trigger_error (self,f_message,f_type = None):
+	def trigger_error (self,message,message_type = None):
 	#
 		"""
 Calls a user-defined function for each exception or error.
 
-@param f_message Error message
-@param f_type Error type
+@param message Error message
+@param message_type Error type
 @since v0.1.00
 		"""
 
-		if (f_type == None): f_type = self.E_NOTICE
-		if (self.error_callback != None): self.error_callback (f_message,f_type)
+		if (message_type == None): message_type = self.E_NOTICE
+		if (self.error_callback != None): self.error_callback (message,message_type)
 	#
 #
 

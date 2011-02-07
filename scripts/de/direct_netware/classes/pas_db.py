@@ -1,6 +1,22 @@
 # -*- coding: utf-8 -*-
 ##j## BOF
 
+"""
+We need a unified interface for communication with SQL-compatible database
+servers. This is the abstract interface.
+
+@internal   We are using epydoc (JavaDoc style) to automate the
+            documentation process for creating the Developer's Manual.
+            Use the following line to ensure 76 character sizes:
+----------------------------------------------------------------------------
+@author     direct Netware Group
+@copyright  (C) direct Netware Group - All rights reserved
+@package    pas_basic
+@subpackage db
+@since      v0.1.00
+@license    http://www.direct-netware.de/redirect.php?licenses;w3c
+            W3C (R) Software License
+"""
 """n// NOTE
 ----------------------------------------------------------------------------
 direct PAS
@@ -19,30 +35,14 @@ http://www.direct-netware.de/redirect.php?licenses;w3c
 pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
 NOTE_END //n"""
-"""
-We need a unified interface for communication with SQL-compatible database
-servers. This is the abstract interface.
 
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;w3c
-            W3C (R) Software License
-"""
-
-from de.direct_netware.classes.pas_basic_functions import direct_basic_functions
-from de.direct_netware.classes.pas_debug import direct_debug
-from de.direct_netware.classes.pas_settings import direct_settings
-from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
-from pas_pluginmanager import direct_plugin_hooks
 from threading import RLock
-import de.direct_netware.plugins.db,random,re
+import random,re
+
+from .pas_globals import direct_globals
+from .pas_pluginmanager import direct_pluginmanager,direct_plugin_hooks
+from .pas_pythonback import direct_str
+from .pas_xml_bridge import direct_xml_bridge
 
 _direct_basic_db = None
 _direct_basic_db_counter = 0
@@ -161,7 +161,7 @@ Construct the class
 ----------------------------------------------------------------------------
 	"""
 
-	def __init__ (self,f_peristent = False,f_error_callback = None):
+	def __init__ (self,peristent = False,error_callback = None):
 	#
 		"""
 Constructor __init__ (direct_db)
@@ -169,30 +169,29 @@ Constructor __init__ (direct_db)
 @since v0.1.00
 		"""
 
-		f_settings = direct_settings.get ()
-
-		self.debug = direct_debug.get ()
-		self.error_callback = f_error_callback
+		self.debug = direct_globals['debug']
+		self.error_callback = error_callback
 		self.synchronized = RLock ()
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.__init__ (direct_db)- (#echo(__LINE__)#)")
 		random.seed ()
 
-		if (direct_basic_functions.get().settings_get ("%s/settings/pas_db.xml" % f_settings['path_data'])):
+		if (direct_globals['basic_functions'].settings_get ("{0}/settings/pas_db.xml".format (direct_globals['settings']['path_data']))):
 		#
-			if ("db_driver" in f_settings): self.db_driver_name = f_settings['db_driver']
+			if ("db_driver" in direct_globals['settings']): self.db_driver_name = direct_globals['settings']['db_driver']
 			else: self.db_driver_name = "sqlite"
 
-			if (not "db_dbprefix" in f_settings): f_settings['db_dbprefix'] = "pas_"
+			if (not "db_dbprefix" in direct_globals['settings']): direct_globals['settings']['db_dbprefix'] = "pas_"
 
-			if (f_peristent): f_settings['db_peristent'] = True
-			elif (not "db_peristent" in f_settings): f_settings['db_peristent'] = f_peristent
-			else: f_settings['db_peristent'] = False
+			if (peristent): direct_globals['settings']['db_peristent'] = True
+			elif (not "db_peristent" in direct_globals['settings']): direct_globals['settings']['db_peristent'] = peristent
+			else: direct_globals['settings']['db_peristent'] = False
 
-			self.db_driver = direct_plugin_hooks.call ("de.direct_netware.db.%s.get" % self.db_driver_name)
-			if (self.db_driver == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading the raw SQL handler",self.E_ERROR)
+			direct_pluginmanager ("de.direct_netware.plugins.db")
+			self.db_driver = direct_plugin_hooks.call ("de.direct_netware.db.{0}.get".format (self.db_driver_name))
+			if (self.db_driver == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.__init__ (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading the raw SQL handler",self.E_ERROR)
 		#
-		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class->__construct (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading database settings",self.E_ERROR)
+		else: self.trigger_error ("#echo(__FILEPATH__)# -db_class.__init__ (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading database settings",self.E_ERROR)
 	#
 
 	def __del__ (self):
@@ -214,26 +213,25 @@ Destructor del_direct_db (direct_db)
 @since v0.1.00
 		"""
 
-		direct_debug.py_del ()
 		self.db_driver = None
 	#
 
-	def define_attributes (self,f_attribute_list):
+	def define_attributes (self,attribute_list):
 	#
 		"""
 Defines SQL attributes. (Only supported for SQL SELECT)
 
-@param  f_attribute_list Requested attributes (including AS definition) as
+@param  attribute_list Requested attributes (including AS definition) as
         array or a string for "*"
-@return (boolean) False if query is empty or on error
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_attributes (+f_attribute_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_attributes (attribute_list)- (#echo(__LINE__)#)")
 
 		if (self.query_type == "select"):
 		#
-			if (type (f_attribute_list) == list): self.query_attributes = f_attribute_list
+			if (type (attribute_list) == list): self.query_attributes = attribute_list
 			else: self.query_attributes = [ "*" ]
 
 			return True
@@ -241,51 +239,53 @@ Defines SQL attributes. (Only supported for SQL SELECT)
 		else: return False
 	#
 
-	def define_grouping (self,f_attribute_list):
+	def define_grouping (self,attribute_list):
 	#
 		"""
 Defines the SQL GROUP BY clause. (Only supported for SQL SELECT)
 
-@param  f_attribute_list Requested grouping (including AS definition) as
+@param  attribute_list Requested grouping (including AS definition) as
         array or a string (for a single attribute)
-@return (boolean) False if query is empty or on error
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_grouping (+f_attribute_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_grouping (attribute_list)- (#echo(__LINE__)#)")
 
 		if (self.query_type == "select"):
 		#
-			if (type (f_attribute_list) == list): self.query_grouping = f_attribute_list
-			else: self.query_grouping = [ f_attribute_list ]
+			if (type (attribute_list) == list): self.query_grouping = attribute_list
+			else: self.query_grouping = [ attribute_list ]
 
 			return True
 		#
 		else: return False
 	#
 
-	def define_join (self,f_type,f_table,f_requirements):
+	def define_join (self,join_type,table,requirements):
 	#
 		"""
 Defines the SQL JOIN clause. (Only supported for SQL SELECT)
 
-@param  f_type Type of JOIN
-@param  f_table Name of the table (" AS Name" is valid)
-@param  f_requirements ON definitions given as an array
-@return (boolean) False if query is empty or on error
+@param  join_type Type of JOIN
+@param  table Name of the table (" AS Name" is valid)
+@param  requirements ON definitions given as an array
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_join (%s,%s,+f_requirements)- (#echo(__LINE__)#)" % ( f_type,f_table ))
+		join_type = direct_str (join_type)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_join ({0},{1},requirements)- (#echo(__LINE__)#)".format (join_type,table))
+
 		f_return = False
 
 		if (self.query_type == "select"):
 		#
-			f_type_requirements = type (f_requirements)
-
-			if ((f_type_requirements == str) or (f_type_requirements == unicode) or (f_type == "cross-join")):
+			if ((type (requirements) == str) or (type == "cross-join")):
 			#
-				self.query_joins.append = { "type": f_type,"table": f_table,"requirements": f_requirements }
+				self.query_joins.append = { "type": join_type,"table": table,"requirements": requirements }
 				f_return = True
 			#
 		#
@@ -293,407 +293,405 @@ Defines the SQL JOIN clause. (Only supported for SQL SELECT)
 		return f_return
 	#
 
-	def define_limit (self,f_limit):
+	def define_limit (self,limit):
 	#
 		"""
 Defines a row limit for queries.
 
-@param  f_limit Limit for the query
-@return (boolean) False if query is empty or on error
+@param  limit Limit for the query
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_limit (%i)- (#echo(__LINE__)#)" % f_limit)
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_limit ({0:d})- (#echo(__LINE__)#)".format (limit))
 
 		if ((self.query_type == "delete") or (self.query_type == "select") or (self.query_type == "update")):
 		#
-			self.query_limit = f_limit
+			self.query_limit = limit
 			return True
 		#
 		else: return False
 	#
 
-	def define_offset (self,f_offset):
+	def define_offset (self,offset):
 	#
 		"""
 Defines an offset for queries.
 
-@param  f_offset Offset for the query (0 for none)
-@return (boolean) False if query is empty or on error
+@param  offset Offset for the query (0 for none)
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_offset (%i)- (#echo(__LINE__)#)" % f_offset)
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_offset ({0:d})- (#echo(__LINE__)#)".format (offset))
 
 		if (self.query_type == "select"):
 		#
-			self.query_offset = f_offset
+			self.query_offset = offset
 			return True
 		#
 		else: return False
 	#
 
-	def define_ordering (self,f_ordering_list):
+	def define_ordering (self,ordering_list):
 	#
 		"""
 Defines the SQL ORDER BY items.
 
-@param  f_ordering_list XML-encoded elements how to order the list
-@return (boolean) False if query is empty or on error
+@param  ordering_list XML-encoded elements how to order the list
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_ordering (+f_ordering_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_ordering (ordering_list)- (#echo(__LINE__)#)")
 		f_return = False
 
-		if (self.query_type == "select"):
-		#
-			f_type = type (f_ordering_list)
+		ordering_list = direct_str (ordering_list)
 
-			if ((f_type == str) or (f_type == unicode)):
-			#
-				self.query_ordering = f_ordering_list
-				f_return = True
-			#
+		if ((self.query_type == "select") and (type (ordering_list) == str)):
+		#
+			self.query_ordering = ordering_list
+			f_return = True
 		#
 
 		return f_return
 	#
 
-	def define_row_conditions (self,f_requirements):
+	def define_row_conditions (self,requirements):
 	#
 		"""
 Defines the SQL WHERE clause.
 
-@param  f_requirements WHERE definitions given as an array
-@return (boolean) False if query is empty or on error
+@param  requirements WHERE definitions given as an array
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_row_conditions (+f_requirements)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_row_conditions (requirements)- (#echo(__LINE__)#)")
 		f_return = False
 
-		if ((self.query_type == "delete") or (self.query_type == "select") or (self.query_type == "update")):
-		#
-			f_type = type (f_requirements)
+		requirements = direct_str (requirements)
 
-			if ((f_type == str) or (f_type == unicode)):
-			#
-				self.query_row_conditions = f_requirements
-				f_return = True
-			#
+		if (((self.query_type == "delete") or (self.query_type == "select") or (self.query_type == "update")) and (type (requirements) == str)):
+		#
+			self.query_row_conditions = requirements
+			f_return = True
 		#
 
 		return f_return
 	#
 
-	def define_row_conditions_encode (self,f_attribute,f_value,f_type,f_logical_operator = "==",f_condition_mode = "and"):
+	def define_row_conditions_encode (self,attribute,value,value_type,logical_operator = "==",condition_mode = "and"):
 	#
 		"""
 Returns valid XML sqlbox code for WHERE. Useful to secure values of
 attributes against SQL injection.
 
-@param  f_attribute Attribute
-@param  f_value Value of the attribute
-@param  f_type Value type (attribute, number, string)
-@param  f_logical_operator Logical operator
-@param  f_condition_mode Condition of this element
-@return (boolean) False if query is empty or on error
+@param  attribute Attribute
+@param  value Value of the attribute
+@param  value_type Value type (attribute, number, string)
+@param  logical_operator Logical operator
+@param  condition_mode Condition of this element
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_row_conditions_encode (%s,%s,%s,%s,%s)- (#echo(__LINE__)#)" % ( f_attribute,f_value,f_type,f_logical_operator,f_condition_mode ))
+		attribute = direct_str (attribute)
+		value = direct_str (value)
+		value_type = direct_str (value_type)
+		logical_operator = direct_str (logical_operator)
+		condition_mode = direct_str (condition_mode)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_row_conditions_encode ({0},{1},{2},{3},{4})- (#echo(__LINE__)#)".format (attribute,value,value_type,logical_operator,condition_mode))
 		f_return = False
 
-		f_xml_object = direct_xml_bridge.get_xml_bridge ()
+		f_xml_object = direct_xml_bridge.py_get ()
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
-			elif (f_type == "number"):
+			if (value_type == "attribute"): value = re.compile("\\W").sub ("",value)
+			elif (value_type == "number"):
 			#
-				try: f_value = "%i" % int (f_value)
-				except Exception,f_handled_exception:
+				try: value = "{0:d}".format (int (value))
+				except ValueError:
 				#
-					try: f_value = "%g" % float (f_value)
-					except Exception,f_handled_inner_exception: f_value = None
+					try: value = "{0:g}".format (float (value))
+					except ValueError: value = None
 				#
 			#
-			elif (f_type != "sublevel"):
+			elif (value_type != "sublevel"):
 			#
-				f_type = "string"
-				if (f_value != None): f_value = self.v_secure (f_value)
+				value_type = "string"
+				if (value != None): value = self.v_secure (value)
 			#
 
-			if (f_condition_mode != "or"): f_condition_mode = "and"
-			if ((f_logical_operator != "!=") and (f_logical_operator != "<") and (f_logical_operator != "<=") and (f_logical_operator != ">") and (f_logical_operator != ">=")): f_logical_operator = "=="
+			if (condition_mode != "or"): condition_mode = "and"
+			if ((logical_operator != "!=") and (logical_operator != "<") and (logical_operator != "<=") and (logical_operator != ">") and (logical_operator != ">=")): logical_operator = "=="
 
 			f_xml_node_array = {
-"tag": "elementpas%s" % self.query_element,
-"attributes": { "attribute": f_attribute,"condition": f_condition_mode,"operator": f_logical_operator,"type": f_type }
+"tag": ("elementpas{0}".format (self.query_element)),
+"attributes": { "attribute": attribute,"condition": condition_mode,"operator": logical_operator,"type": value_type }
 			}
 
-			if (f_value == None):
+			if (value == None):
 			#
 				f_xml_node_array['attributes']['null'] = 1
 				f_xml_node_array['value'] = ""
 			#
-			else: f_xml_node_array['value'] = f_value
+			else: f_xml_node_array['value'] = value
 
 			self.query_element += 1
-			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,f_strict_standard = False)
+			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,strict_standard = False)
 		#
 
 		return f_return
 	#
 
-	def define_search_conditions (self,f_conditions):
+	def define_search_conditions (self,conditions):
 	#
 		"""
 Defines search conditions for the database.
 
-@param  f_conditions Conditions to search for
-@return (boolean) False if query is empty or on error
+@param  conditions Conditions to search for
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_search_conditions (+f_conditions)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_search_conditions (conditions)- (#echo(__LINE__)#)")
 		f_return = False
 
-		if (self.query_type == "select"):
-		#
-			f_type = type (f_conditions)
+		conditions = direct_str (conditions)
 
-			if ((f_type == str) or (f_type == unicode)):
-			#
-				self.query_search_conditions = f_conditions
-				f_return = True
-			#
+		if ((self.query_type == "select") and (type (conditions) == str)):
+		#
+			self.query_search_conditions = conditions
+			f_return = True
 		#
 
 		return f_return
 	#
 
-	def define_search_conditions_term (self,f_term):
+	def define_search_conditions_term (self,term):
 	#
 		"""
 Creates the search term definition XML code for the given term.
 
-@param  f_term Term to search for
-@return (boolean) False if query is empty or on error
+@param  term Term to search for
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_search_conditions_term (+f_term)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_search_conditions_term (term)- (#echo(__LINE__)#)")
 		f_return = False
 
-		f_xml_object = direct_xml_bridge.get_xml_bridge ()
+		f_xml_object = direct_xml_bridge.py_get ()
 
 		if (f_xml_object != None):
 		#
-			f_xml_node_array = { "tag": "searchterm","value": f_term }
-			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,f_strict_standard = False)
+			f_xml_node_array = { "tag": "searchterm","value": term }
+			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,strict_standard = False)
 		#
 
 		return f_return
 	#
 
-	def define_set_attributes (self,f_attribute_list):
+	def define_set_attributes (self,attribute_list):
 	#
 		"""
 Defines the SQL SET clause.
 
-@param  string $f_attribute_list Attributes to set
-@return boolean False if query is empty or on error
+@param  attribute_list Attributes to set
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_set_attributes (+f_attribute_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_set_attributes (attribute_list)- (#echo(__LINE__)#)")
 		f_return = False
 
+		attribute_list = direct_str (attribute_list)
 		f_continue_check = True
 		if ((self.query_type != "insert") and (self.query_type != "replace") and (self.query_type != "update")): f_continue_check = False
 		if (len (self.query_values) > 0): f_continue_check = False
 
-		if (f_continue_check):
+		if ((f_continue_check) and (type (attribute_list) == str)):
 		#
-			f_type = type (f_attribute_list)
-
-			if ((f_type == str) or (f_type == unicode)):
-			#
-				self.query_set_attributes = f_attribute_list
-				f_return = True
-			#
+			self.query_set_attributes = attribute_list
+			f_return = True
 		#
 
 		return f_return
 	#
 
-	def define_set_attributes_encode (self,f_attribute,f_value,f_type):
+	def define_set_attributes_encode (self,attribute,value,value_type):
 	#
 		"""
 Returns valid XML sqlbox code for SET. Useful to secure values against SQL
 injection.
 
-@param  f_attribute Attribute
-@param  f_value Value string
-@param  f_type Value type (attribute, number, string)
-@return (boolean) False if query is empty or on error
+@param  attribute Attribute
+@param  value Value string
+@param  value_type Value type (attribute, number, string)
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_set_attributes_encode (%s,%s,%s)- (#echo(__LINE__)#)" % ( f_attribute,f_value,f_type ))
+		attribute = direct_str (attribute)
+		value = direct_str (value)
+		value_type = direct_str (value_type)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_set_attributes_encode ({0},{1},{2})- (#echo(__LINE__)#)".format (attribute,value,value_type))
 		f_return = False
 
-		f_xml_object = direct_xml_bridge.get_xml_bridge ()
+		f_xml_object = direct_xml_bridge.py_get ()
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
-			elif (f_type == "number"):
+			if (value_type == "attribute"): value = re.compile("\\W").sub ("",value)
+			elif (value_type == "number"):
 			#
-				try: f_value = "%i" % int (f_value)
-				except Exception,f_handled_exception:
+				try: value = "{0:d}".format (int (value))
+				except ValueError:
 				#
-					try: f_value = "%g" % float (f_value)
-					except Exception,f_handled_inner_exception: f_value = None
+					try: value = "{0:g}".format (float (value))
+					except ValueError: value = None
 				#
 			#
 			else:
 			#
-				f_type = "string"
-				if (f_value != None): f_value = self.v_secure (f_value)
+				value_type = "string"
+				if (value != None): value = self.v_secure (value)
 			#
 
-			f_xml_node_array = { "tag": "elementpas%s" % self.query_element,"attributes": { "attribute": f_attribute,"type": f_type } }
+			f_xml_node_array = { "tag": ("elementpas{0}".format (self.query_element)),"attributes": { "attribute": attribute,"type": value_type } }
 
-			if (f_value == None):
+			if (value == None):
 			#
 				f_xml_node_array['attributes']['null'] = 1
 				f_xml_node_array['value'] = ""
 			#
-			else: f_xml_node_array['value'] = f_value
+			else: f_xml_node_array['value'] = value
 
 			self.query_element += 1
-			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,f_strict_standard = False)
+			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,strict_standard = False)
 		#
 
 		return f_return
 	#
 
-	def define_values (self,f_values):
+	def define_values (self,values):
 	#
 		"""
 Defines the SQL VALUES element.
 
-@param  f_values WHERE definitions given as an array
-@return (boolean) False if query is empty or on error
+@param  values WHERE definitions given as an array
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_values (+f_values)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_values (values)- (#echo(__LINE__)#)")
 		f_return = False
 
 		f_continue_check = True
 		if ((self.query_type != "insert") and (self.query_type != "replace")): f_continue_check = False
 		if (len (self.query_set_attributes) > 0): f_continue_check = False
+		values = direct_str (values)
 
-		if (f_continue_check):
+		if ((f_continue_check) and (type (values) == str)):
 		#
-			f_type = type (f_values)
-
-			if ((f_type == str) or (f_type == unicode)):
-			#
-				self.query_values = f_values
-				f_return = True
-			#
+			self.query_values = values
+			f_return = True
 		#
 
 		return f_return
 	#
 
-	def define_values_encode (self,f_value,f_type):
+	def define_values_encode (self,value,value_type):
 	#
 		"""
 Returns valid XML sqlbox code for VALUES. Useful to secure values against
 SQL injection.
 
-@param  f_value Value string
-@param  f_type Value type (attribute, number, string)
-@return (boolean) False if query is empty or on error
+@param  value Value string
+@param  value_type Value type (attribute, number, string)
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_values_encode (%s,%s)- (#echo(__LINE__)#)" % ( f_value,f_type ))
+		value = direct_str (value)
+		value_type = direct_str (value_type)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_values_encode ({0},{1})- (#echo(__LINE__)#)".format (value,value_type))
 		f_return = False
 
-		f_xml_object = direct_xml_bridge.get_xml_bridge ()
+		f_xml_object = direct_xml_bridge.py_get ()
 
 		if (f_xml_object != None):
 		#
-			if (f_type == "attribute"): f_value = re.compile("\\W").sub ("",f_value)
-			elif (f_type == "number"):
+			if (value_type == "attribute"): value = re.compile("\\W").sub ("",value)
+			elif (value_type == "number"):
 			#
-				try: f_value = "%i" % int (f_value)
-				except Exception,f_handled_exception:
+				try: value = "{0:d}".format (int (value))
+				except ValueError:
 				#
-					try: f_value = "%g" % float (f_value)
-					except Exception,f_handled_inner_exception: f_value = None
+					try: value = "{0:g}".format (float (value))
+					except ValueError: value = None
 				#
 			#
-			elif (f_type != "newrow"):
+			elif (value_type != "newrow"):
 			#
-				f_type = "string"
-				if (f_value != None): f_value = self.v_secure (f_value)
+				value_type = "string"
+				if (value != None): value = self.v_secure (value)
 			#
 
-			f_xml_node_array = { "tag": "elementpas%s" % self.query_element,"attributes": { "type": f_type } }
+			f_xml_node_array = { "tag": ("elementpas{0}".format (self.query_element)),"attributes": { "type": value_type } }
 
-			if (f_value == None):
+			if (value == None):
 			#
 				f_xml_node_array['attributes']['null'] = 1
 				f_xml_node_array['value'] = ""
 			#
-			else: f_xml_node_array['value'] = f_value
+			else: f_xml_node_array['value'] = value
 
 			self.query_element += 1
-			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,f_strict_standard = False)
+			f_return = f_xml_object.array2xml_item_encoder (f_xml_node_array,strict_standard = False)
 		#
 
 		return f_return
 	#
 
-	def define_values_keys (self,f_keys_list):
+	def define_values_keys (self,keys_list):
 	#
 		"""
 Defines the SQL WHERE clause.
 
-@param  f_requirements WHERE definitions given as an array
-@return (boolean) False if query is empty or on error
+@param  keys_list WHERE definitions given as an array
+@return (bool) False if query is empty or on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->define_values_keys (+f_keys_list)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_values_keys (keys_list)- (#echo(__LINE__)#)")
 
-		if (((self.query_type == "insert") or (self.query_type == "replace")) and (type (f_keys_list) == list)):
+		if (((self.query_type == "insert") or (self.query_type == "replace")) and (type (keys_list) == list)):
 		#
-			self.query_values_keys = f_keys_list
+			self.query_values_keys = keys_list
 			return True
 		#
 		else: return False
 	#
 
-	def init_delete (self,f_table):
+	def init_delete (self,table):
 	#
 		"""
 Initiates a DELETE request.
 
-@param  f_table Name of the table (" AS Name" is valid)
-@return (boolean) False if query cache is not empty (Query not executed?)
+@param  table Name of the table (" AS Name" is valid)
+@return (bool) False if query cache is not empty (Query not executed?)
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->init_delete (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.init_delete ({0})- (#echo(__LINE__)#)".format (table))
 
 		if ((self.db_driver != None) and (len (self.query_type) < 1)):
 		#
@@ -707,7 +705,7 @@ Initiates a DELETE request.
 			self.query_row_conditions = ""
 			self.query_search_conditions = ""
 			self.query_set_attributes = [ ]
-			self.query_table = f_table
+			self.query_table = table
 			self.query_type = "delete"
 			self.query_values = ""
 			self.query_values_keys = [ ]
@@ -717,17 +715,19 @@ Initiates a DELETE request.
 		else: return False
 	#
 
-	def init_insert (self,f_table):
+	def init_insert (self,table):
 	#
 		"""
 Initiates a INSERT request.
 
-@param  f_table Name of the table (" AS Name" is valid)
-@return (boolean) False if query cache is not empty (Query not executed?)
+@param  table Name of the table (" AS Name" is valid)
+@return (bool) False if query cache is not empty (Query not executed?)
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->init_insert (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.init_insert ({0})- (#echo(__LINE__)#)".format (table))
 
 		if ((self.db_driver != None) and (len (self.query_type) < 1)):
 		#
@@ -741,7 +741,7 @@ Initiates a INSERT request.
 			self.query_row_conditions = ""
 			self.query_search_conditions = ""
 			self.query_set_attributes = [ ]
-			self.query_table = f_table
+			self.query_table = table
 			self.query_type = "insert"
 			self.query_values = ""
 			self.query_values_keys = [ ]
@@ -751,17 +751,19 @@ Initiates a INSERT request.
 		else: return False
 	#
 
-	def init_replace (self,f_table):
+	def init_replace (self,table):
 	#
 		"""
 Initiates a REPLACE request.
 
-@param  f_table Name of the table (" AS Name" is valid)
-@return (boolean) False if query cache is not empty (Query not executed?)
+@param  table Name of the table (" AS Name" is valid)
+@return (bool) False if query cache is not empty (Query not executed?)
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->init_replace (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.init_replace ({0})- (#echo(__LINE__)#)".format (table))
 
 		if ((self.db_driver != None) and (len (self.query_type) < 1)):
 		#
@@ -775,7 +777,7 @@ Initiates a REPLACE request.
 			self.query_row_conditions = ""
 			self.query_search_conditions = ""
 			self.query_set_attributes = [ ]
-			self.query_table = f_table
+			self.query_table = table
 			self.query_type = "replace"
 			self.query_values = ""
 			self.query_values_keys = [ ]
@@ -785,17 +787,19 @@ Initiates a REPLACE request.
 		else: return False
 	#
 
-	def init_select (self,f_table):
+	def init_select (self,table):
 	#
 		"""
 Initiates a SELECT request.
 
-@param  f_table Name of the table (" AS Name" is valid)
-@return (boolean) False if query cache is not empty (Query not executed?)
+@param  table Name of the table (" AS Name" is valid)
+@return (bool) False if query cache is not empty (Query not executed?)
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->init_select (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.init_select ({0})- (#echo(__LINE__)#)".format (table))
 
 		if ((self.db_driver != None) and (len (self.query_type) < 1)):
 		#
@@ -809,7 +813,7 @@ Initiates a SELECT request.
 			self.query_row_conditions = ""
 			self.query_search_conditions = ""
 			self.query_set_attributes = [ ]
-			self.query_table = f_table
+			self.query_table = table
 			self.query_type = "select"
 			self.query_values = ""
 			self.query_values_keys = [ ]
@@ -819,17 +823,19 @@ Initiates a SELECT request.
 		else: return False
 	#
 
-	def init_update (self,f_table):
+	def init_update (self,table):
 	#
 		"""
 Initiates a UPDATE request.
 
-@param  f_table Name of the table (" AS Name" is valid)
-@return (boolean) False if query cache is not empty (Query not executed?)
+@param  table Name of the table (" AS Name" is valid)
+@return (bool) False if query cache is not empty (Query not executed?)
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->init_update (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.init_update ({0})- (#echo(__LINE__)#)".format (table))
 
 		if ((self.db_driver != None) and (len (self.query_type) < 1)):
 		#
@@ -843,7 +849,7 @@ Initiates a UPDATE request.
 			self.query_row_conditions = ""
 			self.query_search_conditions = ""
 			self.query_set_attributes = [ ]
-			self.query_table = f_table
+			self.query_table = table
 			self.query_type = "update"
 			self.query_values = ""
 			self.query_values_keys = [ ]
@@ -858,7 +864,7 @@ Initiates a UPDATE request.
 		"""
 Acquires the lock.
 
-@since  v0.1.00
+@since v0.1.00
 		"""
 
 		self.synchronized.acquire ()
@@ -869,48 +875,52 @@ Acquires the lock.
 		"""
 Releases the previously acquired lock.
 
-@since  v0.1.00
+@since v0.1.00
 		"""
 
 		self.synchronized.release ()
 	#
 
-	def optimize_random (self,f_table):
+	def optimize_random (self,table):
 	#
 		"""
 Optimizes a given table randomly (1/3).
 
-@param  f_table Name of the table
-@return (boolean) True on success
+@param  table Name of the table
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->optimize_random (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
 
-		if (random.randint (0,30) > 20): return self.v_optimize (f_table)
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.optimize_random ({0})- (#echo(__LINE__)#)".format (table))
+
+		if (random.randint (0,30) > 20): return self.v_optimize (table)
 		else: return True
 	#
 
-	def query_exec (self,f_answer = "sa"):
+	def query_exec (self,answer = "sa"):
 	#
 		"""
 Transmits defined data to the SQL builder and returns the result in a
-developer specified format via f_answer.
+developer specified format via answer.
 
-@param  f_answer Defines the requested type that should be returned
+@param  answer Defines the requested type that should be returned
         The following types are supported: "ar", "co", "ma", "ms", "nr",
         "sa" or "ss".
 @return (mixed) Result returned by the server in the specified format
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->query_exec (%s)- (#echo(__LINE__)#)" % f_answer)
+		answer = direct_str (answer)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_exec ({0})- (#echo(__LINE__)#)".format (answer))
 		f_return = False
 
 		if ((self.db_driver != None) and (len (self.query_type) > 0)):
 		#
 			f_data = { }
-			f_data['answer'] = f_answer
+			f_data['answer'] = answer
 
 			f_data['attributes'] = self.query_attributes
 			self.query_attributes = [ "*" ]
@@ -958,31 +968,31 @@ developer specified format via f_answer.
 		return f_return
 	#
 
-	def set_trigger (self,f_function = None):
+	def set_trigger (self,py_function = None):
 	#
 		"""
 Set a given function to be called for each exception or error.
 
-@param f_function Python function to be called
+@param py_function Python function to be called
 @since v0.1.00
 		"""
 
-		self.error_callback = f_function
-		if (self.db_driver != None): self.db_driver.set_trigger (f_function)
+		self.error_callback = py_function
+		if (self.db_driver != None): self.db_driver.set_trigger (py_function)
 	#
 
-	def trigger_error (self,f_message,f_type = None):
+	def trigger_error (self,message,message_type = None):
 	#
 		"""
 Calls a user-defined function for each exception or error.
 
-@param f_message Error message
-@param f_type Error type
+@param message Error message
+@param message_type Error type
 @since v0.1.00
 		"""
 
-		if (f_type == None): f_type = self.E_NOTICE
-		if (self.error_callback != None): self.error_callback (f_message,f_type)
+		if (message_type == None): message_type = self.E_NOTICE
+		if (self.error_callback != None): self.error_callback (message,message_type)
 	#
 
 	def v_connect (self):
@@ -991,11 +1001,11 @@ Calls a user-defined function for each exception or error.
 Opens the connection to a database server and selects a database. This
 method acquires the lock automatically to support multi thread environments.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_connect ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_connect ()- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): f_return = False
 		else:
@@ -1014,11 +1024,11 @@ method acquires the lock automatically to support multi thread environments.
 Closes an active database connection to the server. This method acquires the
 lock automatically to support multi thread environments.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_disconnect ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_disconnect ()- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): f_return = False
 		else:
@@ -1031,73 +1041,77 @@ lock automatically to support multi thread environments.
 		return f_return
 	#
 
-	def v_optimize (self,f_table):
+	def v_optimize (self,table):
 	#
 		"""
 Optimizes a given table.
 
-@param  f_table Name of the table
-@return (boolean) True on success
+@param  table Name of the table
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_optimize (%s)- (#echo(__LINE__)#)" % f_table)
+		table = direct_str (table)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_optimize ({0})- (#echo(__LINE__)#)".format (table))
 
 		if (self.db_driver == None): return False
-		else: return self.db_driver.optimize (f_table)
+		else: return self.db_driver.optimize (table)
 	#
 
-	def v_query_build (self,f_query):
+	def v_query_build (self,query):
 	#
 		"""
 Builds and runs the SQL statement using the connected database specific
 layer.
 
-@param  f_data Array containing query specific information.
+@param  query Dictionary containing query specific information.
 @return (mixed) Result returned by the server in the specified format
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_query_build (+f_query)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_query_build (query)- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): return False
-		else: return self.db_driver.query_build (f_query)
+		else: return self.db_driver.query_build (query)
 	#
 
-	def v_query_exec (self,f_answer,f_query):
+	def v_query_exec (self,answer,query):
 	#
 		"""
 Transmits an SQL query and returns the result in a developer specified
-format via f_answer.
+format via answer.
 
-@param  f_answer Defines the requested type that should be returned
+@param  answer Defines the requested type that should be returned
         The following types are supported: "ar", "co", "ma", "ms", "nr",
         "sa" or "ss".
-@param  f_query Valid SQL query
+@param  query Valid SQL query
 @return (mixed) Result returned by the server in the specified format
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_query_exec (%s,+f_query)- (#echo(__LINE__)#)" % f_answer)
+		answer = direct_str (answer)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_query_exec ({0},query)- (#echo(__LINE__)#)".format (answer))
 
 		if (self.db_driver == None): return False
-		else: return self.db_driver.query_exec (f_answer,f_query)
+		else: return self.db_driver.query_exec (answer,query)
 	#
 
-	def v_secure (self,f_data):
+	def v_secure (self,data):
 	#
 		"""
 Secures a given string to protect against SQL injections.
 
-@param  f_data Input array or string
+@param  data Input array or string
 @return (mixed) Modified input or None on error
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_secure (+f_data)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_secure (data)- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): return None
-		else: return self.db_driver.secure (f_data)
+		else: return self.db_driver.secure (data)
 	#
 
 	def v_transaction_begin (self):
@@ -1105,11 +1119,11 @@ Secures a given string to protect against SQL injections.
 		"""
 Starts a transaction.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_transaction_begin ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_begin ()- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): return False
 		else: return self.db_driver.transaction_begin ()
@@ -1120,11 +1134,11 @@ Starts a transaction.
 		"""
 Commits all transaction statements.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_transaction_commit ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_commit ()- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): return False
 		else: return self.db_driver.transaction_commit ()
@@ -1135,55 +1149,22 @@ Commits all transaction statements.
 		"""
 Calls the ROLLBACK statement.
 
-@return (boolean) True on success
+@return (bool) True on success
 @since  v0.1.00
 		"""
 
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class->v_transaction_rollback ()- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_rollback ()- (#echo(__LINE__)#)")
 
 		if (self.db_driver == None): return False
 		else: return self.db_driver.transaction_rollback ()
 	#
-
-	def get (f_count = True):
-	#
-		"""
-Get the direct_db singleton.
-
-@param  bool Count "get ()" request
-@return (direct_db) Object on success
-@since  v1.0.0
-		"""
-
-		global _direct_basic_db,_direct_basic_db_counter
-
-		if (_direct_basic_db == None): _direct_basic_db = direct_db ()
-		if (f_count): _direct_basic_db_counter += 1
-
-		return _direct_basic_db
-	#
-	get = staticmethod (get)
-
-	def get_db (f_count = True):
-	#
-		"""
-Get the direct_db singleton.
-
-@param  bool Count "get ()" request
-@return (direct_db) Object on success
-@since  v1.0.0
-		"""
-
-		return direct_db.get (f_count)
-	#
-	get_db = staticmethod (get_db)
 
 	def py_del ():
 	#
 		"""
 The last "py_del ()" call will activate the Python singleton destructor.
 
-@since  v1.0.0
+@since v0.1.00
 		"""
 
 		global _direct_basic_db,_direct_basic_db_counter
@@ -1192,6 +1173,25 @@ The last "py_del ()" call will activate the Python singleton destructor.
 		if (_direct_basic_db_counter == 0): _direct_basic_db = None
 	#
 	py_del = staticmethod (py_del)
+
+	def py_get (count = True):
+	#
+		"""
+Get the direct_db singleton.
+
+@param  count Count "get ()" request
+@return (direct_db) Object on success
+@since  v0.1.00
+		"""
+
+		global _direct_basic_db,_direct_basic_db_counter
+
+		if (_direct_basic_db == None): _direct_basic_db = direct_db ()
+		if (count): _direct_basic_db_counter += 1
+
+		return _direct_basic_db
+	#
+	py_get = staticmethod (py_get)
 #
 
 ##j## EOF
