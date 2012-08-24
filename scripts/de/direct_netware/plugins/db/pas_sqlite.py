@@ -35,7 +35,7 @@ pas/#echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
 NOTE_END //n"""
 
-from de.direct_netware.classes.pas_dbraw_sqlite import direct_dbraw_sqlite
+from de.direct_netware.classes.dbraw.pas_sqlite import direct_sqlite
 from de.direct_netware.classes.pas_pluginmanager import direct_plugin_hooks
 
 def direct_basic_dbraw_sqlite_init (params = None,last_return = None):
@@ -49,7 +49,18 @@ Returns an instance to handle SQLite databases.
 @since  v0.1.00
 	"""
 
-	return direct_dbraw_sqlite ()
+	return direct_sqlite ()
+#
+
+def plugin_deregistration ():
+#
+	"""
+Deregister plugin hooks.
+
+@since v0.1.00
+	"""
+
+	pass
 #
 
 def plugin_registration ():

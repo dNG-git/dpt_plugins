@@ -94,6 +94,21 @@ Register a python function for the hook.
 		_direct_pluginmanager.register_hook (hook,py_function,prepend,exclusive)
 	#
 	register = staticmethod (register)
+
+	def unregister (hook,py_function):
+	#
+		"""
+Unregister a python function from the hook.
+
+@param  hook Hook-ID
+@param  py_function Python function to be unregistered
+@since  v0.1.00
+		"""
+
+		global _direct_pluginmanager
+		_direct_pluginmanager.unregister_hook (hook,py_function)
+	#
+	unregister = staticmethod (unregister)
 #
 
 class direct_pluginmanager (object):
@@ -126,7 +141,7 @@ Registered plugin manager instance
 	def __init__ (self,module_package,base_dir = ""):
 	#
 		"""
-Constructor
+Constructor __init__ (direct_pluginmanager)
 
 @param module_package Module path to be scanned for *.py files
 @param base_dir Base directory for plugin modules
@@ -170,6 +185,7 @@ Constructor
 Call the helper function to run all functions registered for the hook.
 
 @param  hook Hook-ID
+@param  params Hook parameter
 @return (mixed) Hook results on success; None if not defined
 @since  v0.1.00
 		"""
@@ -183,6 +199,7 @@ Call the helper function to run all functions registered for the hook.
 Call all functions registered for the hook with the specified parameters.
 
 @param  hook Hook-ID
+@param  params Hook parameter
 @return (mixed) Data expected to be returned by the hook
 @since  v0.1.00
 		"""
@@ -192,10 +209,10 @@ Call all functions registered for the hook with the specified parameters.
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -pluginmanager.call_hook_handler ({0},params)- (#echo(__LINE__)#)".format (hook))
 		f_return = None
 
-		if (not "hook" in params): params['hook'] = hook
-
 		if ((hook in self.pluginmanager.hooks) and (type (self.pluginmanager.hooks[hook]) == list)):
 		#
+			if ("hook" not in params): params['hook'] = hook
+
 			for f_function in self.pluginmanager.hooks[hook]:
 			#
 				try: f_return = f_function (params,last_return = f_return)
@@ -217,7 +234,7 @@ Import the module and register all defined hooks.
 
 @param module_package Module path to be scanned for *.py files
 @param base_dir Base directory for plugin modules
-@since  v0.1.00
+@since v0.1.00
 		"""
 
 		module_package = direct_str (module_package)
@@ -225,8 +242,6 @@ Import the module and register all defined hooks.
 
 		global _direct_pluginmanager_list
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -pluginmanager.load_module ({0},{1})- (#echo(__LINE__)#)".format ( module_package,base_dir ))
-
-		_direct_pluginmanager_list[module_package] = base_dir
 
 		try:
 		#
@@ -264,7 +279,11 @@ Import the module and register all defined hooks.
 						f_module = imp.load_module ((module_package + f_module_name),f_file_object,f_file_path,f_pydescription)
 						if (f_file_object != None): f_file_object.close ()
 
-						if (hasattr (f_module,"plugin_registration")): f_module.plugin_registration ()
+						if ((hasattr (f_module,"plugin_registration")) and (hasattr (f_module,"plugin_deregistration"))):
+						#
+							f_module.plugin_registration ()
+							_direct_pluginmanager_list[(module_package + f_module_name)] = [ f_module,f_module_name,base_dir,f_path ]
+						#
 					#
 					except Exception as f_handled_exception: direct_logger.critical (f_handled_exception)
 
@@ -279,11 +298,11 @@ Import the module and register all defined hooks.
 		"""
 Register a python function for the hook.
 
-@param  hook Hook-ID
-@param  py_function Python function to be registered
-@param  prepend Add function at the beginning of the stack if true.
-@param  exclusive Add the given function exclusively.
-@since  v0.1.00
+@param hook Hook-ID
+@param py_function Python function to be registered
+@param prepend Add function at the beginning of the stack if true.
+@param exclusive Add the given function exclusively.
+@since v0.1.00
 		"""
 
 		hook = direct_str (hook)
@@ -293,11 +312,71 @@ Register a python function for the hook.
 		if (exclusive): self.pluginmanager.hooks[hook] = [ py_function ]
 		else:
 		#
-			if (not hook in self.pluginmanager.hooks): self.pluginmanager.hooks[hook] = [ ]
+			if (hook not in self.pluginmanager.hooks): self.pluginmanager.hooks[hook] = [ ]
 
 			if (prepend): self.pluginmanager.hooks[hook].insert (0,py_function)
 			else: self.pluginmanager.hooks[hook].append (py_function)
 		#
+	#
+
+	def reload (self):
+	#
+		"""
+Register a python function for the hook.
+
+@param hook Hook-ID
+@param py_function Python function to be registered
+@param prepend Add function at the beginning of the stack if true.
+@param exclusive Add the given function exclusively.
+@since v0.1.00
+		"""
+
+		global _direct_pluginmanager_list
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -pluginmanager.reload ()- (#echo(__LINE__)#)")
+
+		f_entries = _direct_pluginmanager_list.copy ()
+		_direct_pluginmanager_list = { }
+
+		for f_entry_name in f_entries:
+		#
+			f_entry = f_entries[f_entry_name]
+			f_entry[0].plugin_deregistration ()
+			del (f_entry[0])
+
+			imp.acquire_lock ()
+
+			try:
+			#
+				( f_file_object,f_file_path,f_pydescription ) = imp.find_module (f_entry[0],[ f_entry[1] + f_entry[2] ])
+				f_module = imp.load_module (f_entry_name,f_file_object,f_file_path,f_pydescription)
+				if (f_file_object != None): f_file_object.close ()
+
+				if ((hasattr (f_module,"plugin_registration")) and (hasattr (f_module,"plugin_deregistration"))):
+				#
+					f_module.plugin_registration ()
+					_direct_pluginmanager_list[f_entry_name] = [ f_module,f_entry[0],f_entry[1],f_entry[2] ]
+				#
+			#
+			except Exception as f_handled_exception: direct_logger.critical (f_handled_exception)
+
+			imp.release_lock ()
+		#
+	#
+
+	def unregister_hook (self,hook,py_function):
+	#
+		"""
+Unregister a python function from the hook.
+
+@param hook Hook-ID
+@param py_function Python function to be unregistered
+@since v0.1.00
+		"""
+
+		hook = direct_str (hook)
+
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -pluginmanager.unregister_hook ({0},py_function)- (#echo(__LINE__)#)".format (hook))
+		if ((hook in self.pluginmanager.hooks) and (py_function in self.pluginmanager.hooks[hook])): del (self.pluginmanager.hooks[hook][self.pluginmanager.hooks[hook].index (py_function)])
 	#
 
 	def plugins_base_dir_get ():

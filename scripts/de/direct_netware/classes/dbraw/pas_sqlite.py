@@ -40,11 +40,11 @@ from os import path
 from threading import local
 import re,sqlite3
 
-from .pas_globals import direct_globals
-from .pas_pythonback import direct_str
-from .pas_xml_bridge import direct_xml_bridge
+from de.direct_netware.classes.pas_globals import direct_globals
+from de.direct_netware.classes.pas_pythonback import direct_str
+from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
 
-class direct_dbraw_sqlite (object):
+class direct_sqlite (object):
 #
 	"""
 This class has been designed to be used with a SQLite database.
@@ -97,31 +97,31 @@ Construct the class
 	def __init__ (self):
 	#
 		"""
-Constructor __init__ (direct_dbraw_sqlite)
+Constructor __init__ (direct_sqlite)
 
 @since v0.1.00
 		"""
 
 		self.debug = direct_globals['debug']
-		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.__init__ (direct_dbraw_sqlite)- (#echo(__LINE__)#)")
+		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.__init__ (direct_sqlite)- (#echo(__LINE__)#)")
 		self.local = local ()
 	#
 
 	def __del__ (self):
 	#
 		"""
-Destructor __del__ (direct_dbraw_sqlite)
+Destructor __del__ (direct_sqlite)
 
 @since v0.1.00
 		"""
 
-		self.del_direct_dbraw_sqlite ()
+		self.del_direct_sqlite ()
 	#
 
-	def del_direct_dbraw_sqlite (self):
+	def del_direct_sqlite (self):
 	#
 		"""
-Destructor del_direct_dbraw_sqlite (direct_dbraw_sqlite)
+Destructor del_direct_sqlite (direct_sqlite)
 
 @since v0.1.00
 		"""
@@ -464,7 +464,7 @@ Creates a WHERE string including sublevel conditions.
 					#
 					elif (f_requirement_dict['value'] != "*"):
 					#
-						if (not "type" in f_requirement_dict['attributes']): f_requirement_dict['attributes']['type'] = "string"
+						if ("type" not in f_requirement_dict['attributes']): f_requirement_dict['attributes']['type'] = "string"
 
 						if (len (f_return) > 0):
 						#
@@ -472,7 +472,7 @@ Creates a WHERE string including sublevel conditions.
 							else: f_return += " AND "
 						#
 
-						if (not "operator" in f_requirement_dict['attributes']): f_requirement_dict['attributes']['operator'] = ""
+						if ("operator" not in f_requirement_dict['attributes']): f_requirement_dict['attributes']['operator'] = ""
 						if ((f_requirement_dict['attributes']['operator'] != "!=") and (f_requirement_dict['attributes']['operator'] != "<") and (f_requirement_dict['attributes']['operator'] != "<=") and (f_requirement_dict['attributes']['operator'] != ">") and (f_requirement_dict['attributes']['operator'] != ">=")): f_requirement_dict['attributes']['operator'] = "=="
 						f_return += "{0}".format (f_requirement_dict['attributes']['attribute'])
 

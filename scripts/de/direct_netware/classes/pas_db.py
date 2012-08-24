@@ -181,10 +181,10 @@ Constructor __init__ (direct_db)
 			if ("db_driver" in direct_globals['settings']): self.db_driver_name = direct_globals['settings']['db_driver']
 			else: self.db_driver_name = "sqlite"
 
-			if (not "db_dbprefix" in direct_globals['settings']): direct_globals['settings']['db_dbprefix'] = "pas_"
+			if ("db_dbprefix" not in direct_globals['settings']): direct_globals['settings']['db_dbprefix'] = "pas_"
 
 			if (peristent): direct_globals['settings']['db_peristent'] = True
-			elif (not "db_peristent" in direct_globals['settings']): direct_globals['settings']['db_peristent'] = peristent
+			elif ("db_peristent" not in direct_globals['settings']): direct_globals['settings']['db_peristent'] = peristent
 			else: direct_globals['settings']['db_peristent'] = False
 
 			direct_pluginmanager ("de.direct_netware.plugins.db")
@@ -232,7 +232,7 @@ Defines SQL attributes. (Only supported for SQL SELECT)
 		if (self.query_type == "select"):
 		#
 			if (type (attribute_list) == list): self.query_attributes = attribute_list
-			else: self.query_attributes = [ "*" ]
+			else: self.query_attributes = [ attribute_list ]
 
 			return True
 		#
