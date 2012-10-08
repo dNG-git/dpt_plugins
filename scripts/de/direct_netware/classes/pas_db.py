@@ -4,18 +4,6 @@
 """
 We need a unified interface for communication with SQL-compatible database
 servers. This is the abstract interface.
-
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -52,13 +40,13 @@ class direct_db (object):
 	"""
 This is the abstract interface to communicate with SQL servers.
 
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas_basic
+:subpackage: db
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.php?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	E_NOTICE = 1
@@ -166,7 +154,7 @@ Construct the class
 		"""
 Constructor __init__ (direct_db)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.debug = direct_globals['debug']
@@ -199,7 +187,7 @@ Constructor __init__ (direct_db)
 		"""
 Destructor __del__ (direct_dbraw_sqlite)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.del_direct_db ()
@@ -210,7 +198,7 @@ Destructor __del__ (direct_dbraw_sqlite)
 		"""
 Destructor del_direct_db (direct_db)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.db_driver = None
@@ -221,10 +209,11 @@ Destructor del_direct_db (direct_db)
 		"""
 Defines SQL attributes. (Only supported for SQL SELECT)
 
-@param  attribute_list Requested attributes (including AS definition) as
-        array or a string for "*"
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param attribute_list: Requested attributes (including AS definition) as
+                       array or a string for "*"
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_attributes (attribute_list)- (#echo(__LINE__)#)")
@@ -244,10 +233,11 @@ Defines SQL attributes. (Only supported for SQL SELECT)
 		"""
 Defines the SQL GROUP BY clause. (Only supported for SQL SELECT)
 
-@param  attribute_list Requested grouping (including AS definition) as
-        array or a string (for a single attribute)
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param attribute_list: Requested grouping (including AS definition) as
+                       array or a string (for a single attribute)
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_grouping (attribute_list)- (#echo(__LINE__)#)")
@@ -267,11 +257,12 @@ Defines the SQL GROUP BY clause. (Only supported for SQL SELECT)
 		"""
 Defines the SQL JOIN clause. (Only supported for SQL SELECT)
 
-@param  join_type Type of JOIN
-@param  table Name of the table (" AS Name" is valid)
-@param  requirements ON definitions given as an array
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param join_type: Type of JOIN
+:param table: Name of the table (" AS Name" is valid)
+:param requirements: ON definitions given as an array
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		join_type = direct_str (join_type)
@@ -298,9 +289,10 @@ Defines the SQL JOIN clause. (Only supported for SQL SELECT)
 		"""
 Defines a row limit for queries.
 
-@param  limit Limit for the query
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param limit: Limit for the query
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_limit ({0:d})- (#echo(__LINE__)#)".format (limit))
@@ -318,9 +310,10 @@ Defines a row limit for queries.
 		"""
 Defines an offset for queries.
 
-@param  offset Offset for the query (0 for none)
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param offset: Offset for the query (0 for none)
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_offset ({0:d})- (#echo(__LINE__)#)".format (offset))
@@ -338,9 +331,10 @@ Defines an offset for queries.
 		"""
 Defines the SQL ORDER BY items.
 
-@param  ordering_list XML-encoded elements how to order the list
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param ordering_list: XML-encoded elements how to order the list
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_ordering (ordering_list)- (#echo(__LINE__)#)")
@@ -362,9 +356,10 @@ Defines the SQL ORDER BY items.
 		"""
 Defines the SQL WHERE clause.
 
-@param  requirements WHERE definitions given as an array
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param requirements: WHERE definitions given as an array
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_row_conditions (requirements)- (#echo(__LINE__)#)")
@@ -387,13 +382,14 @@ Defines the SQL WHERE clause.
 Returns valid XML sqlbox code for WHERE. Useful to secure values of
 attributes against SQL injection.
 
-@param  attribute Attribute
-@param  value Value of the attribute
-@param  value_type Value type (attribute, number, string)
-@param  logical_operator Logical operator
-@param  condition_mode Condition of this element
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param attribute: Attribute
+:param value: Value of the attribute
+:param value_type: Value type (attribute, number, string)
+:param logical_operator: Logical operator
+:param condition_mode: Condition of this element
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		attribute = direct_str (attribute)
@@ -452,9 +448,10 @@ attributes against SQL injection.
 		"""
 Defines search conditions for the database.
 
-@param  conditions Conditions to search for
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param conditions: Conditions to search for
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_search_conditions (conditions)- (#echo(__LINE__)#)")
@@ -476,9 +473,10 @@ Defines search conditions for the database.
 		"""
 Creates the search term definition XML code for the given term.
 
-@param  term Term to search for
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param term: Term to search for
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_search_conditions_term (term)- (#echo(__LINE__)#)")
@@ -500,9 +498,10 @@ Creates the search term definition XML code for the given term.
 		"""
 Defines the SQL SET clause.
 
-@param  attribute_list Attributes to set
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param attribute_list: Attributes to set
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_set_attributes (attribute_list)- (#echo(__LINE__)#)")
@@ -528,11 +527,12 @@ Defines the SQL SET clause.
 Returns valid XML sqlbox code for SET. Useful to secure values against SQL
 injection.
 
-@param  attribute Attribute
-@param  value Value string
-@param  value_type Value type (attribute, number, string)
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param attribute: Attribute
+:param value: Value string
+:param value_type: Value type (attribute, number, string)
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		attribute = direct_str (attribute)
@@ -583,9 +583,10 @@ injection.
 		"""
 Defines the SQL VALUES element.
 
-@param  values WHERE definitions given as an array
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param values: WHERE definitions given as an array
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_values (values)- (#echo(__LINE__)#)")
@@ -611,10 +612,11 @@ Defines the SQL VALUES element.
 Returns valid XML sqlbox code for VALUES. Useful to secure values against
 SQL injection.
 
-@param  value Value string
-@param  value_type Value type (attribute, number, string)
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param value: Value string
+:param value_type: Value type (attribute, number, string)
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		value = direct_str (value)
@@ -664,9 +666,10 @@ SQL injection.
 		"""
 Defines the SQL WHERE clause.
 
-@param  keys_list WHERE definitions given as an array
-@return (bool) False if query is empty or on error
-@since  v0.1.00
+:param keys_list: WHERE definitions given as an array
+
+:return: (bool) False if query is empty or on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.define_values_keys (keys_list)- (#echo(__LINE__)#)")
@@ -684,9 +687,10 @@ Defines the SQL WHERE clause.
 		"""
 Initiates a DELETE request.
 
-@param  table Name of the table (" AS Name" is valid)
-@return (bool) False if query cache is not empty (Query not executed?)
-@since  v0.1.00
+:param table: Name of the table (" AS Name" is valid)
+
+:return: (bool) False if query cache is not empty (Query not executed?)
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -720,9 +724,10 @@ Initiates a DELETE request.
 		"""
 Initiates a INSERT request.
 
-@param  table Name of the table (" AS Name" is valid)
-@return (bool) False if query cache is not empty (Query not executed?)
-@since  v0.1.00
+:param table: Name of the table (" AS Name" is valid)
+
+:return: (bool) False if query cache is not empty (Query not executed?)
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -756,9 +761,10 @@ Initiates a INSERT request.
 		"""
 Initiates a REPLACE request.
 
-@param  table Name of the table (" AS Name" is valid)
-@return (bool) False if query cache is not empty (Query not executed?)
-@since  v0.1.00
+:param table: Name of the table (" AS Name" is valid)
+
+:return: (bool) False if query cache is not empty (Query not executed?)
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -792,9 +798,10 @@ Initiates a REPLACE request.
 		"""
 Initiates a SELECT request.
 
-@param  table Name of the table (" AS Name" is valid)
-@return (bool) False if query cache is not empty (Query not executed?)
-@since  v0.1.00
+:param table: Name of the table (" AS Name" is valid)
+
+:return: (bool) False if query cache is not empty (Query not executed?)
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -828,9 +835,10 @@ Initiates a SELECT request.
 		"""
 Initiates a UPDATE request.
 
-@param  table Name of the table (" AS Name" is valid)
-@return (bool) False if query cache is not empty (Query not executed?)
-@since  v0.1.00
+:param table: Name of the table (" AS Name" is valid)
+
+:return: (bool) False if query cache is not empty (Query not executed?)
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -864,7 +872,7 @@ Initiates a UPDATE request.
 		"""
 Acquires the lock.
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.synchronized.acquire ()
@@ -875,7 +883,7 @@ Acquires the lock.
 		"""
 Releases the previously acquired lock.
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.synchronized.release ()
@@ -886,9 +894,10 @@ Releases the previously acquired lock.
 		"""
 Optimizes a given table randomly (1/3).
 
-@param  table Name of the table
-@return (bool) True on success
-@since  v0.1.00
+:param table: Name of the table
+
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -905,11 +914,11 @@ Optimizes a given table randomly (1/3).
 Transmits defined data to the SQL builder and returns the result in a
 developer specified format via answer.
 
-@param  answer Defines the requested type that should be returned
-        The following types are supported: "ar", "co", "ma", "ms", "nr",
-        "sa" or "ss".
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
+:param answer: Defines the requested type that should be returned. The
+               following types are supported: "ar", "co", "ma", "ms", "nr",
+               "sa" or "ss".
+:return: (mixed) Result returned by the server in the specified format
+:since:  v0.1.00
 		"""
 
 		answer = direct_str (answer)
@@ -973,8 +982,9 @@ developer specified format via answer.
 		"""
 Set a given function to be called for each exception or error.
 
-@param py_function Python function to be called
-@since v0.1.00
+:param py_function: Python function to be called
+
+:since: v0.1.00
 		"""
 
 		self.error_callback = py_function
@@ -986,9 +996,10 @@ Set a given function to be called for each exception or error.
 		"""
 Calls a user-defined function for each exception or error.
 
-@param message Error message
-@param message_type Error type
-@since v0.1.00
+:param message: Error message
+:param message_type: Error type
+
+:since: v0.1.00
 		"""
 
 		if (message_type == None): message_type = self.E_NOTICE
@@ -999,10 +1010,11 @@ Calls a user-defined function for each exception or error.
 	#
 		"""
 Opens the connection to a database server and selects a database. This
-method acquires the lock automatically to support multi thread environments.
+method acquires the lock automatically to support multi thread
+environments.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_connect ()- (#echo(__LINE__)#)")
@@ -1021,11 +1033,11 @@ method acquires the lock automatically to support multi thread environments.
 	def v_disconnect (self):
 	#
 		"""
-Closes an active database connection to the server. This method acquires the
-lock automatically to support multi thread environments.
+Closes an active database connection to the server. This method acquires
+the lock automatically to support multi thread environments.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_disconnect ()- (#echo(__LINE__)#)")
@@ -1046,9 +1058,10 @@ lock automatically to support multi thread environments.
 		"""
 Optimizes a given table.
 
-@param  table Name of the table
-@return (bool) True on success
-@since  v0.1.00
+:param table: Name of the table
+
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -1065,9 +1078,10 @@ Optimizes a given table.
 Builds and runs the SQL statement using the connected database specific
 layer.
 
-@param  query Dictionary containing query specific information.
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
+:param query: Dictionary containing query specific information.
+
+:return: (mixed) Result returned by the server in the specified format
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_query_build (query)- (#echo(__LINE__)#)")
@@ -1082,12 +1096,13 @@ layer.
 Transmits an SQL query and returns the result in a developer specified
 format via answer.
 
-@param  answer Defines the requested type that should be returned
-        The following types are supported: "ar", "co", "ma", "ms", "nr",
-        "sa" or "ss".
-@param  query Valid SQL query
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
+:param answer: Defines the requested type that should be returned. The
+               following types are supported: "ar", "co", "ma", "ms", "nr",
+               "sa" or "ss".
+:param query: Valid SQL query
+
+:return: (mixed) Result returned by the server in the specified format
+:since:  v0.1.00
 		"""
 
 		answer = direct_str (answer)
@@ -1103,9 +1118,10 @@ format via answer.
 		"""
 Secures a given string to protect against SQL injections.
 
-@param  data Input array or string
-@return (mixed) Modified input or None on error
-@since  v0.1.00
+:param data: Input array or string
+
+:return: (mixed) Modified input or None on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_secure (data)- (#echo(__LINE__)#)")
@@ -1119,8 +1135,8 @@ Secures a given string to protect against SQL injections.
 		"""
 Starts a transaction.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_begin ()- (#echo(__LINE__)#)")
@@ -1134,8 +1150,8 @@ Starts a transaction.
 		"""
 Commits all transaction statements.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_commit ()- (#echo(__LINE__)#)")
@@ -1149,8 +1165,8 @@ Commits all transaction statements.
 		"""
 Calls the ROLLBACK statement.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.v_transaction_rollback ()- (#echo(__LINE__)#)")
@@ -1164,7 +1180,7 @@ Calls the ROLLBACK statement.
 		"""
 The last "py_del ()" call will activate the Python singleton destructor.
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		global _direct_basic_db,_direct_basic_db_counter
@@ -1179,9 +1195,10 @@ The last "py_del ()" call will activate the Python singleton destructor.
 		"""
 Get the direct_db singleton.
 
-@param  count Count "get ()" request
-@return (direct_db) Object on success
-@since  v0.1.00
+:param count: Count "get ()" request
+
+:return: (direct_db) Object on success
+:since:  v0.1.00
 		"""
 
 		global _direct_basic_db,_direct_basic_db_counter

@@ -4,18 +4,6 @@
 """
 Our main abstraction layer for plugins is the plugin manager. It registers
 and identifies hooks.
-
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage plugins
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -53,13 +41,13 @@ class direct_plugin_hooks (object):
 	"""
 The direct_plugin_hooks class provides static helper functions.
 
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage plugins
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas_basic
+:subpackage: plugins
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.php?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	def call (hook,**params):
@@ -67,10 +55,11 @@ The direct_plugin_hooks class provides static helper functions.
 		"""
 Call all functions registered for the hook with the specified parameters.
 
-@param  hook Hook-ID
-@param  params Keyword parameters
-@return (mixed) Hook results on success; None if not defined
-@since  v0.1.00
+:param hook: Hook-ID
+:param params: Keyword parameters
+
+:return: (mixed) Hook results on success; None if not defined
+:since:  v0.1.00
 		"""
 
 		global _direct_pluginmanager
@@ -83,11 +72,12 @@ Call all functions registered for the hook with the specified parameters.
 		"""
 Register a python function for the hook.
 
-@param  hook Hook-ID
-@param  py_function Python function to be registered
-@param  prepend Add function at the beginning of the stack if true.
-@param  exclusive Add the given function exclusively.
-@since  v0.1.00
+:param hook: Hook-ID
+:param py_function: Python function to be registered
+:param prepend: Add function at the beginning of the stack if true.
+:param exclusive: Add the given function exclusively.
+
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager
@@ -100,9 +90,10 @@ Register a python function for the hook.
 		"""
 Unregister a python function from the hook.
 
-@param  hook Hook-ID
-@param  py_function Python function to be unregistered
-@since  v0.1.00
+:param hook: Hook-ID
+:param py_function: Python function to be unregistered
+
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager
@@ -116,13 +107,13 @@ class direct_pluginmanager (object):
 	"""
 The direct_pluginmanager class provides hook-based Python plugins.
 
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage plugins
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas_basic
+:subpackage: plugins
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.php?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	debug = None
@@ -143,9 +134,10 @@ Registered plugin manager instance
 		"""
 Constructor __init__ (direct_pluginmanager)
 
-@param module_package Module path to be scanned for *.py files
-@param base_dir Base directory for plugin modules
-@since v0.1.00
+:param module_package: Module path to be scanned for *.py files
+:param base_dir: Base directory for plugin modules
+
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager
@@ -184,10 +176,11 @@ Constructor __init__ (direct_pluginmanager)
 		"""
 Call the helper function to run all functions registered for the hook.
 
-@param  hook Hook-ID
-@param  params Hook parameter
-@return (mixed) Hook results on success; None if not defined
-@since  v0.1.00
+:param hook: Hook-ID
+:param params: Hook parameter
+
+:return: (mixed) Hook results on success; None if not defined
+:since:  v0.1.00
 		"""
 
 		return self.pluginmanager.call_hook_handler (hook,params)
@@ -198,10 +191,11 @@ Call the helper function to run all functions registered for the hook.
 		"""
 Call all functions registered for the hook with the specified parameters.
 
-@param  hook Hook-ID
-@param  params Hook parameter
-@return (mixed) Data expected to be returned by the hook
-@since  v0.1.00
+:param hook: Hook-ID
+:param params: Hook parameter
+
+:return: (mixed) Data expected to be returned by the hook
+:since:  v0.1.00
 		"""
 
 		hook = direct_str (hook)
@@ -232,9 +226,10 @@ Call all functions registered for the hook with the specified parameters.
 		"""
 Import the module and register all defined hooks.
 
-@param module_package Module path to be scanned for *.py files
-@param base_dir Base directory for plugin modules
-@since v0.1.00
+:param module_package: Module path to be scanned for *.py files
+:param base_dir: Base directory for plugin modules
+
+:since: v0.1.00
 		"""
 
 		module_package = direct_str (module_package)
@@ -298,11 +293,12 @@ Import the module and register all defined hooks.
 		"""
 Register a python function for the hook.
 
-@param hook Hook-ID
-@param py_function Python function to be registered
-@param prepend Add function at the beginning of the stack if true.
-@param exclusive Add the given function exclusively.
-@since v0.1.00
+:param hook: Hook-ID
+:param py_function: Python function to be registered
+:param prepend: Add function at the beginning of the stack if true.
+:param exclusive: Add the given function exclusively.
+
+:since: v0.1.00
 		"""
 
 		hook = direct_str (hook)
@@ -324,11 +320,12 @@ Register a python function for the hook.
 		"""
 Register a python function for the hook.
 
-@param hook Hook-ID
-@param py_function Python function to be registered
-@param prepend Add function at the beginning of the stack if true.
-@param exclusive Add the given function exclusively.
-@since v0.1.00
+:param hook: Hook-ID
+:param py_function: Python function to be registered
+:param prepend: Add function at the beginning of the stack if true.
+:param exclusive: Add the given function exclusively.
+
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager_list
@@ -368,9 +365,10 @@ Register a python function for the hook.
 		"""
 Unregister a python function from the hook.
 
-@param hook Hook-ID
-@param py_function Python function to be unregistered
-@since v0.1.00
+:param hook: Hook-ID
+:param py_function: Python function to be unregistered
+
+:since: v0.1.00
 		"""
 
 		hook = direct_str (hook)
@@ -384,8 +382,8 @@ Unregister a python function from the hook.
 		"""
 Get the default base directory where plugin modules will be searched in.
 
-@return (str) Base directory for plugin modules
-@since v0.1.00
+:return: (str) Base directory for plugin modules
+:since:  v0.1.00
 		"""
 
 		global _direct_pluginmanager_base_dir
@@ -399,8 +397,9 @@ Get the default base directory where plugin modules will be searched in.
 		"""
 Set a default base directory where plugin modules will be searched in.
 
-@param base_dir Base directory for plugin modules
-@since v0.1.00
+:param base_dir: Base directory for plugin modules
+
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager_base_dir
@@ -416,7 +415,7 @@ Set a default base directory where plugin modules will be searched in.
 		"""
 The last "py_del ()" call will activate the Python singleton destructor.
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		global _direct_pluginmanager,_direct_pluginmanager_counter
@@ -431,9 +430,10 @@ The last "py_del ()" call will activate the Python singleton destructor.
 		"""
 Get the direct_pluginmanager singleton.
 
-@param  count Count "get ()" request
-@return (direct_pluginmanager) Object on success; None if not initialized
-@since  v0.1.00
+:param count: Count "get ()" request
+
+:return: (direct_pluginmanager) Object on success; None if not initialized
+:since:  v0.1.00
 		"""
 
 		global _direct_pluginmanager,_direct_pluginmanager_counter

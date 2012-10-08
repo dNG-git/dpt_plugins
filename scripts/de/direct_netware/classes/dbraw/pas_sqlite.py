@@ -4,18 +4,6 @@
 """
 We need a unified interface for communication with SQL-compatible database
 servers. This one is designed for SQLite.
-
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -49,13 +37,13 @@ class direct_sqlite (object):
 	"""
 This class has been designed to be used with a SQLite database.
 
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas_basic
+:subpackage: db
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.php?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	E_NOTICE = 1
@@ -99,7 +87,7 @@ Construct the class
 		"""
 Constructor __init__ (direct_sqlite)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.debug = direct_globals['debug']
@@ -112,7 +100,7 @@ Constructor __init__ (direct_sqlite)
 		"""
 Destructor __del__ (direct_sqlite)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.del_direct_sqlite ()
@@ -123,7 +111,7 @@ Destructor __del__ (direct_sqlite)
 		"""
 Destructor del_direct_sqlite (direct_sqlite)
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		self.disconnect ()
@@ -134,8 +122,8 @@ Destructor del_direct_sqlite (direct_sqlite)
 		"""
 Opens the connection to a database server and selects a database.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.connect ()- (#echo(__LINE__)#)")
@@ -169,8 +157,8 @@ Opens the connection to a database server and selects a database.
 		"""
 Closes an active database connection to the server.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.disconnect ()- (#echo(__LINE__)#)")
@@ -190,9 +178,10 @@ Closes an active database connection to the server.
 		"""
 Builds a valid SQL query for SQLite and executes it.
 
-@param  data Dictionary containing query specific information.
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
+:param data: Dictionary containing query specific information.
+
+:return: (mixed) Result returned by the server in the specified format
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build (data)- (#echo(__LINE__)#)")
@@ -368,9 +357,10 @@ Builds a valid SQL query for SQLite and executes it.
 		"""
 Builds the SQL attributes list of a query.
 
-@param  attributes_list List of attributes
-@return (str) Attributes list with translated function names
-@since  v0.1.00
+:param attributes_list: List of attributes
+
+:return: (str) Attributes list with translated function names
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_attributes (attributes_list)- (#echo(__LINE__)#)")
@@ -403,9 +393,10 @@ Builds the SQL attributes list of a query.
 		"""
 Builds the SQL ORDER BY part of a query.
 
-@param  ordering_dict ORDER BY list given as a XML dictionary tree
-@return (str) Valid SQL ORDER BY definition
-@since  v0.1.00
+:param ordering_dict: ORDER BY list given as a XML dictionary tree
+
+:return: (str) Valid SQL ORDER BY definition
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_ordering (ordering_dict)- (#echo(__LINE__)#)")
@@ -433,9 +424,10 @@ Builds the SQL ORDER BY part of a query.
 		"""
 Creates a WHERE string including sublevel conditions.
 
-@param  requirements_dict WHERE definitions given as a XML dictionary tree
-@return (str) Valid SQL WHERE definition
-@since  v0.1.00
+:param requirements_dict: WHERE definitions given as a XML dictionary tree
+
+:return: (str) Valid SQL WHERE definition
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_row_conditions_walker (requirements_dict)- (#echo(__LINE__)#)")
@@ -499,9 +491,10 @@ Creates a WHERE string including sublevel conditions.
 		"""
 Creates search requests
 
-@param  conditions_dict WHERE definitions given as a XML dictionary tree
-@return (str) Valid SQL WHERE definition
-@since  v0.1.00
+:param conditions_dict: WHERE definitions given as a XML dictionary tree
+
+:return: (str) Valid SQL WHERE definition
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_search_conditions (conditions_dict)- (#echo(__LINE__)#)")
@@ -639,9 +632,10 @@ Don't forget to check the buffer $f_word_buffer
 		"""
 Builds the SQL attributes and values list for UPDATE.
 
-@param  attributes_dict Attributes given as a XML dictionary tree
-@return (str) Attributes list with translated function names
-@since  v0.1.00
+:param attributes_dict: Attributes given as a XML dictionary tree
+
+:return: (str) Attributes list with translated function names
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_set_attributes (attributes_dict)- (#echo(__LINE__)#)")
@@ -679,9 +673,10 @@ Builds the SQL attributes and values list for UPDATE.
 		"""
 Builds the SQL VALUES part of a query.
 
-@param  values_dict WHERE definitions given as a XML dictionary tree
-@return (str) Valid SQL VALUES definition
-@since  v0.1.00
+:param values_dict: WHERE definitions given as a XML dictionary tree
+
+:return: (str) Valid SQL VALUES definition
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_values (values_dict)- (#echo(__LINE__)#)")
@@ -732,9 +727,10 @@ Builds the SQL VALUES part of a query.
 		"""
 Builds the SQL attributes and values list for INSERT.
 
-@param  attributes_dict Attributes given as a XML dictionary tree
-@return (str) Attributes list with translated function names
-@since  v0.1.00
+:param attributes_dict: Attributes given as a XML dictionary tree
+
+:return: (str) Attributes list with translated function names
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.query_build_values_keys (attributes_dict)- (#echo(__LINE__)#)")
@@ -775,12 +771,13 @@ Builds the SQL attributes and values list for INSERT.
 Transmits an SQL query and returns the result in a developer specified
 format via answer.
 
-@param  answer Defines the requested type that should be returned
-        The following types are supported: "ar", "co", "ma", "ms", "nr",
-        "sa" or "ss".
-@param  query Valid SQL query
-@return (mixed) Result returned by the server in the specified format
-@since  v0.1.00
+:param answer: Defines the requested type that should be returned. The
+               following types are supported: "ar", "co", "ma", "ms", "nr",
+               "sa" or "ss".
+:param query: Valid SQL query
+
+:return: (mixed) Result returned by the server in the specified format
+:since:  v0.1.00
 		"""
 
 		answer = direct_str (answer)
@@ -893,9 +890,10 @@ format via answer.
 		"""
 Optimizes a given table.
 
-@param  table Name of the table
-@return (bool) True on success
-@since  v0.1.00
+:param table: Name of the table
+
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		table = direct_str (table)
@@ -917,9 +915,10 @@ Optimizes a given table.
 		"""
 Secures a given string to protect against SQL injections.
 
-@param  data Input array or string
-@return (mixed) Modified input or None on error
-@since  v0.1.00
+:param data: Input array or string
+
+:return: (mixed) Modified input or None on error
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.secure (data)- (#echo(__LINE__)#)")
@@ -935,8 +934,9 @@ Secures a given string to protect against SQL injections.
 		"""
 Set a given function to be called for each exception or error.
 
-@param py_function Python function to be called
-@since v0.1.00
+:@param py_function: Python function to be called
+
+:since: v0.1.00
 		"""
 
 		self.error_callback = py_function
@@ -948,7 +948,7 @@ Set a given function to be called for each exception or error.
 For thread safety some variables are defined per thread. This method makes
 sure that these variables are defined.
 
-@since v0.1.00
+:since: v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.thread_local_check ()- (#echo(__LINE__)#)")
@@ -968,8 +968,8 @@ sure that these variables are defined.
 		"""
 Starts a transaction.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_begin ()- (#echo(__LINE__)#)")
@@ -993,8 +993,8 @@ Starts a transaction.
 		"""
 Commits all transaction statements.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_commit ()- (#echo(__LINE__)#)")
@@ -1027,8 +1027,8 @@ Commits all transaction statements.
 		"""
 Calls the ROLLBACK statement.
 
-@return (bool) True on success
-@since  v0.1.00
+:return: (bool) True on success
+:since:  v0.1.00
 		"""
 
 		if (self.debug != None): self.debug.append ("#echo(__FILEPATH__)# -db_class.transaction_rollback ()- (#echo(__LINE__)#)")
@@ -1061,9 +1061,10 @@ Calls the ROLLBACK statement.
 		"""
 Calls a user-defined function for each exception or error.
 
-@param message Error message
-@param message_type Error type
-@since v0.1.00
+:param message: Error message
+:param message_type: Error type
+
+:since: v0.1.00
 		"""
 
 		if (message_type == None): message_type = self.E_NOTICE

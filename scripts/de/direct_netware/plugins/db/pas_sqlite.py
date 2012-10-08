@@ -3,18 +3,6 @@
 
 """
 de.direct_netware.plugins.db.pas_sqlite
-
-@internal   We are using epydoc (JavaDoc style) to automate the
-            documentation process for creating the Developer's Manual.
-            Use the following line to ensure 76 character sizes:
-----------------------------------------------------------------------------
-@author     direct Netware Group
-@copyright  (C) direct Netware Group - All rights reserved
-@package    pas_basic
-@subpackage db
-@since      v0.1.00
-@license    http://www.direct-netware.de/redirect.php?licenses;mpl2
-            Mozilla Public License, v. 2.0
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -43,10 +31,11 @@ def direct_basic_dbraw_sqlite_init (params = None,last_return = None):
 	"""
 Returns an instance to handle SQLite databases.
 
-@param  params Parameter specified calling "direct_pluginmanager".
-@param  last_return The return value from the last hook called.
-@return (direct_dbraw_sqlite) Instance on success
-@since  v0.1.00
+:param params: Parameter specified calling "direct_pluginmanager".
+:param last_return: The return value from the last hook called.
+
+:return: (direct_dbraw_sqlite) Instance on success
+:since:  v0.1.00
 	"""
 
 	return direct_sqlite ()
@@ -57,7 +46,7 @@ def plugin_deregistration ():
 	"""
 Deregister plugin hooks.
 
-@since v0.1.00
+:since: v0.1.00
 	"""
 
 	pass
@@ -68,7 +57,7 @@ def plugin_registration ():
 	"""
 Register plugin hooks.
 
-@since v0.1.00
+:since: v0.1.00
 	"""
 
 	direct_plugin_hooks.register ("de.direct_netware.db.sqlite.get",direct_basic_dbraw_sqlite_init,exclusive = True)
