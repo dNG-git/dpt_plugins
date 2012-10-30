@@ -144,7 +144,7 @@ Constructor __init__ (direct_pluginmanager)
 
 		if (_direct_pluginmanager == None):
 		#
-			f_module_packages = [ "de.direct_netware.plugins" ]
+			f_module_packages = [ "dNG.plugins" ]
 
 			self.pluginmanager = self
 			_direct_pluginmanager = self
@@ -420,8 +420,8 @@ The last "py_del ()" call will activate the Python singleton destructor.
 
 		global _direct_pluginmanager,_direct_pluginmanager_counter
 
-		_direct_pluginmanager_counter -= 1
-		if (_direct_pluginmanager_counter == 0): _direct_pluginmanager = None
+		if (_direct_pluginmanager_counter <= 1): _direct_pluginmanager = None
+		elif (_direct_pluginmanager_counter != None): _direct_pluginmanager_counter -= 1
 	#
 	py_del = staticmethod (py_del)
 

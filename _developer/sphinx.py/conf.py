@@ -86,7 +86,7 @@ add_module_names = False
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = [ "de.direct_netware.classes.pas_","de.direct_netware.classes.dbraw.pas_","de.direct_netware.plugins.db.pas_" ]
+modindex_common_prefix = [ "dNG.classes.pas_","dNG.classes.dbraw.pas_","dNG.plugins.db.pas_" ]
 
 
 # -- Options for HTML output ---------------------------------------------------

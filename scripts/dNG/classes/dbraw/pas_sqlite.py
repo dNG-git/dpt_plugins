@@ -28,9 +28,9 @@ from os import path
 from threading import local
 import re,sqlite3
 
-from de.direct_netware.classes.pas_globals import direct_globals
-from de.direct_netware.classes.pas_pythonback import direct_str
-from de.direct_netware.classes.pas_xml_bridge import direct_xml_bridge
+from dNG.classes.pas_globals import direct_globals
+from dNG.classes.pas_pythonback import direct_str
+from dNG.classes.pas_xml_bridge import direct_xml_bridge
 
 class direct_sqlite (object):
 #

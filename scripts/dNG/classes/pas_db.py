@@ -175,7 +175,7 @@ Constructor __init__ (direct_db)
 			elif ("db_peristent" not in direct_globals['settings']): direct_globals['settings']['db_peristent'] = peristent
 			else: direct_globals['settings']['db_peristent'] = False
 
-			direct_pluginmanager ("de.direct_netware.plugins.db")
+			direct_pluginmanager ("dNG.plugins.db")
 			self.db_driver = direct_plugin_hooks.call ("de.direct_netware.db.{0}.get".format (self.db_driver_name))
 			if (self.db_driver == None): self.trigger_error ("#echo(__FILEPATH__)# -db_class.__init__ (direct_db)- (#echo(__LINE__)#) reporting: Fatal error while loading the raw SQL handler",self.E_ERROR)
 		#
@@ -1185,8 +1185,8 @@ The last "py_del ()" call will activate the Python singleton destructor.
 
 		global _direct_basic_db,_direct_basic_db_counter
 
-		_direct_basic_db_counter -= 1
-		if (_direct_basic_db_counter == 0): _direct_basic_db = None
+		if (_direct_basic_db_counter <= 1): _direct_basic_db = None
+		elif (_direct_basic_db_counter != None): _direct_basic_db_counter -= 1
 	#
 	py_del = staticmethod (py_del)
 
