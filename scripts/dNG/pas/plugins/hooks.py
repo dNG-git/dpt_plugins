@@ -179,7 +179,6 @@ Sets the log_handler.
 :since: v0.1.00
 		"""
 
-		if (log_handler != None): log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.set_log_handler(log_handler)- (#echo(__LINE__)#)")
 		direct_hooks.log_handler = log_handler
 	#
 
