@@ -117,9 +117,10 @@ Get the hooks singleton.
 :since:  v0.1.00
 		"""
 
-		direct_hooks.synchronized.acquire()
-		if (direct_hooks.instance == None): direct_hooks.instance = direct_hooks()
-		direct_hooks.synchronized.release()
+		with direct_hooks.synchronized:
+		#
+			if (direct_hooks.instance == None): direct_hooks.instance = direct_hooks()
+		#
 
 		return direct_hooks.instance
 	#
