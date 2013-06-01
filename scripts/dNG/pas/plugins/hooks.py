@@ -25,7 +25,7 @@ NOTE_END //n"""
 
 from threading import RLock
 
-from dNG.pas.pythonback import direct_str
+from dNG.pas.data.binary import direct_binary
 from .manager import direct_manager
 
 class direct_hooks(dict):
@@ -80,7 +80,7 @@ Call all functions registered for the hook with the specified parameters.
 :since:  v0.1.00
 		"""
 
-		hook = direct_str(hook)
+		hook = direct_binary.str(hook)
 
 		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
 		var_return = None
@@ -153,7 +153,7 @@ Register a python function for the hook.
 :since: v0.1.00
 		"""
 
-		hook = direct_str(hook)
+		hook = direct_binary.str(hook)
 
 		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.register({0}, py_function, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
 
@@ -195,7 +195,7 @@ Unregister a python function from the hook.
 :since: v0.1.00
 		"""
 
-		hook = direct_str(hook)
+		hook = direct_binary.str(hook)
 
 		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.unregister({0}, py_function)- (#echo(__LINE__)#)".format(hook))
 
