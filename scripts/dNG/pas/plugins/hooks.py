@@ -33,12 +33,13 @@ class direct_hooks(dict):
 	"""
 The direct_hooks class provides hook-based Python plugins.
 
-:author:    direct Netware Group
-:copyright: direct Netware Group - All rights reserved
-:package:   pas_plugins
-:since:     v0.1.00
-:license:   http://www.direct-netware.de/redirect.py?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas
+:subpackage: plugins
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.py?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	instance = None

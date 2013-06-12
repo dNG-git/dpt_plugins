@@ -18,7 +18,7 @@ obtain one at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------------------------
 http://www.direct-netware.de/redirect.py?licenses;mpl2
 ----------------------------------------------------------------------------
-#echo(pasCoreVersion)#
+#echo(pasPluginsVersion)#
 #echo(__FILEPATH__)#
 ----------------------------------------------------------------------------
 NOTE_END //n"""
@@ -31,15 +31,15 @@ from dNG.pas.module.named_loader import direct_named_loader
 class direct_manager(direct_named_loader):
 #
 	"""
-"direct_named_loader" provides singletons and objects based on a callable
-common name.
+"direct_manager" provides methods to handle plugins.
 
-:author:    direct Netware Group
-:copyright: direct Netware Group - All rights reserved
-:package:   pas.core
-:since:     v0.1.00
-:license:   http://www.direct-netware.de/redirect.py?licenses;mpl2
-            Mozilla Public License, v. 2.0
+:author:     direct Netware Group
+:copyright:  direct Netware Group - All rights reserved
+:package:    pas
+:subpackage: plugins
+:since:      v0.1.00
+:license:    http://www.direct-netware.de/redirect.py?licenses;mpl2
+             Mozilla Public License, v. 2.0
 	"""
 
 	plugins = { }
