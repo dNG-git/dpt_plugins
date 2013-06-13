@@ -2,7 +2,7 @@
 ##j## BOF
 
 """
-dNG.pas.plugins.manager
+dNG.pas.plugins.Manager
 """
 """n// NOTE
 ----------------------------------------------------------------------------
@@ -26,12 +26,12 @@ NOTE_END //n"""
 from os import path
 import os
 
-from dNG.pas.module.named_loader import direct_named_loader
+from dNG.pas.module.named_loader import NamedLoader
 
-class direct_manager(direct_named_loader):
+class Manager(NamedLoader):
 #
 	"""
-"direct_manager" provides methods to handle plugins.
+"Manager" provides methods to handle plugins.
 
 :author:     direct Netware Group
 :copyright:  direct Netware Group - All rights reserved
@@ -66,9 +66,9 @@ to "dNG.pas.plugins".
 		if (prefix == None): prefix = "dNG.pas.plugins"
 		package = "{0}.{1}".format(prefix, plugin)
 
-		if (direct_named_loader.load_package(package) != None):
+		if (NamedLoader.load_package(package) != None):
 		#
-			package_path = path.normpath("{0}/{1}".format(direct_manager.get_loader().get_base_dir(), package.replace(".", path.sep)))
+			package_path = path.normpath("{0}/{1}".format(Manager.get_loader().get_base_dir(), package.replace(".", path.sep)))
 			if (not os.access(package_path, os.R_OK)): package_path = None
 		#
 		else: package_path = None
@@ -80,21 +80,21 @@ to "dNG.pas.plugins".
 				if (dir_entry.endswith(".py") and dir_entry != "__init__.py"):
 				#
 					module_name = "{0}.{1}".format(package, dir_entry[:-3])
-					module = direct_named_loader.load_module(module_name)
+					module = NamedLoader.load_module(module_name)
 
 					if (module != None and hasattr(module, "plugin_registration")):
 					#
 						try:
 						#
-							if (package not in direct_manager.plugins): direct_manager.plugins[package] = [ ]
-							if (module_name not in direct_manager.plugins[package]): direct_manager.plugins[package].append(module_name)
+							if (package not in Manager.plugins): Manager.plugins[package] = [ ]
+							if (module_name not in Manager.plugins[package]): Manager.plugins[package].append(module_name)
 
 							module.plugin_registration()
 							var_return = True
 						#
 						except Exception as handled_exception:
 						#
-							if (direct_manager.log_handler != None): direct_manager.log_handler.error(handled_exception)
+							if (Manager.log_handler != None): Manager.log_handler.error(handled_exception)
 						#
 					#
 				#
@@ -118,15 +118,15 @@ Reload all plugins or the plugins matching the given prefix.
 
 		var_return = True
 
-		for package in direct_manager.plugins:
+		for package in Manager.plugins:
 		#
 			if (prefix == None or package.startswith(prefix)):
 			#
-				modules = direct_manager.plugins[package]
+				modules = Manager.plugins[package]
 
 				for module_name in modules:
 				#
-					module = direct_named_loader.load_module(module_name)
+					module = NamedLoader.load_module(module_name)
 
 					if (module != None and hasattr(module, "plugin_deregistration")):
 					#
@@ -137,7 +137,7 @@ Reload all plugins or the plugins matching the given prefix.
 						#
 						except Exception as handled_exception:
 						#
-							if (direct_manager.log_handler != None): direct_manager.log_handler.error(handled_exception)
+							if (Manager.log_handler != None): Manager.log_handler.error(handled_exception)
 							var_return = False
 						#
 					#

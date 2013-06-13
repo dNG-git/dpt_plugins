@@ -4,4 +4,4 @@ __py*
 .pyc
 make*.py*
 nbproject
-pas_basic.*
+pas_plugins.*

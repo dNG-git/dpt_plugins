@@ -25,13 +25,13 @@ NOTE_END //n"""
 
 from threading import RLock
 
-from dNG.pas.data.binary import direct_binary
-from .manager import direct_manager
+from dNG.pas.data.binary import Binary
+from .manager import Manager
 
-class direct_hooks(dict):
+class Hooks(dict):
 #
 	"""
-The direct_hooks class provides hook-based Python plugins.
+The Hooks class provides hook-based Python plugins.
 
 :author:     direct Netware Group
 :copyright:  direct Netware Group - All rights reserved
@@ -81,12 +81,12 @@ Call all functions registered for the hook with the specified parameters.
 :since:  v0.1.00
 		"""
 
-		hook = direct_binary.str(hook)
+		hook = Binary.str(hook)
 
-		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
 		var_return = None
 
-		hooks = direct_hooks.get_instance()
+		hooks = Hooks.get_instance()
 
 		if (hook in hooks and type(hooks[hook]) == list):
 		#
@@ -97,7 +97,7 @@ Call all functions registered for the hook with the specified parameters.
 				try: var_return = py_function(params, last_return = var_return)
 				except Exception as handled_exception:
 				#
-					if (direct_hooks.log_handler != None): direct_hooks.log_handler.error(handled_exception)
+					if (Hooks.log_handler != None): Hooks.log_handler.error(handled_exception)
 					var_return = handled_exception
 				#
 			#
@@ -114,16 +114,16 @@ Get the hooks singleton.
 
 :param count: Count "get()" request
 
-:return: (direct_hooks) Object on success
+:return: (Hooks) Object on success
 :since:  v0.1.00
 		"""
 
-		with direct_hooks.synchronized:
+		with Hooks.synchronized:
 		#
-			if (direct_hooks.instance == None): direct_hooks.instance = direct_hooks()
+			if (Hooks.instance == None): Hooks.instance = Hooks()
 		#
 
-		return direct_hooks.instance
+		return Hooks.instance
 	#
 
 	@staticmethod
@@ -137,7 +137,7 @@ Scans a plugin and loads its hooks.
 :since: v0.1.00
 		"""
 
-		direct_manager.load_plugin(plugin)
+		Manager.load_plugin(plugin)
 	#
 
 	@staticmethod
@@ -154,11 +154,11 @@ Register a python function for the hook.
 :since: v0.1.00
 		"""
 
-		hook = direct_binary.str(hook)
+		hook = Binary.str(hook)
 
-		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.register({0}, py_function, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.register({0}, py_function, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
 
-		hooks = direct_hooks.get_instance()
+		hooks = Hooks.get_instance()
 
 		if (exclusive): hooks[hook] = [ py_function ]
 		else:
@@ -181,7 +181,7 @@ Sets the log_handler.
 :since: v0.1.00
 		"""
 
-		direct_hooks.log_handler = log_handler
+		Hooks.log_handler = log_handler
 	#
 
 	@staticmethod
@@ -196,11 +196,11 @@ Unregister a python function from the hook.
 :since: v0.1.00
 		"""
 
-		hook = direct_binary.str(hook)
+		hook = Binary.str(hook)
 
-		if (direct_hooks.log_handler != None): direct_hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.unregister({0}, py_function)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.unregister({0}, py_function)- (#echo(__LINE__)#)".format(hook))
 
-		hooks = direct_hooks.get_instance()
+		hooks = Hooks.get_instance()
 		if (hook in hooks and py_function in hooks[hook]): del(hooks[hook][hooks[hook].index(py_function)])
 	#
 #
