@@ -56,18 +56,6 @@ happened.
 Lock used in multi thread environments.
 	"""
 
-	def return_instance(self):
-	#
-		"""
-The last "return_instance()" call will activate the Python singleton
-destructor.
-
-:since: v0.1.00
-		"""
-
-		pass
-	#
-
 	@staticmethod
 	def call(hook, **params):
 	#
@@ -107,12 +95,10 @@ Call all functions registered for the hook with the specified parameters.
 	#
 
 	@staticmethod
-	def get_instance(count = False):
+	def get_instance():
 	#
 		"""
 Get the hooks singleton.
-
-:param count: Count "get()" request
 
 :return: (Hooks) Object on success
 :since:  v0.1.00
