@@ -61,14 +61,14 @@ to "dNG.pas.plugins".
 :since:  v0.1.00
 		"""
 
-		var_return = False
+		_return = False
 
 		if (prefix == None): prefix = "dNG.pas.plugins"
 		package = "{0}.{1}".format(prefix, plugin)
 
-		if (NamedLoader.load_package(package) != None):
+		if (NamedLoader._load_package(package) != None):
 		#
-			package_path = path.normpath("{0}/{1}".format(Manager.get_loader().get_base_dir(), package.replace(".", path.sep)))
+			package_path = path.normpath("{0}/{1}".format(Manager._get_loader().get_base_dir(), package.replace(".", path.sep)))
 			if (not os.access(package_path, os.R_OK)): package_path = None
 		#
 		else: package_path = None
@@ -80,7 +80,7 @@ to "dNG.pas.plugins".
 				if (dir_entry.endswith(".py") and dir_entry != "__init__.py"):
 				#
 					module_name = "{0}.{1}".format(package, dir_entry[:-3])
-					module = NamedLoader.load_module(module_name)
+					module = NamedLoader._load_module(module_name)
 
 					if (module != None and hasattr(module, "plugin_registration")):
 					#
@@ -90,7 +90,7 @@ to "dNG.pas.plugins".
 							if (module_name not in Manager.plugins[package]): Manager.plugins[package].append(module_name)
 
 							module.plugin_registration()
-							var_return = True
+							_return = True
 						#
 						except Exception as handled_exception:
 						#
@@ -101,7 +101,7 @@ to "dNG.pas.plugins".
 			#
 		#
 
-		return var_return
+		return _return
 	#
 
 	@staticmethod
@@ -116,7 +116,7 @@ Reload all plugins or the plugins matching the given prefix.
 :since:  v0.1.00
 		"""
 
-		var_return = True
+		_return = True
 
 		for package in Manager.plugins:
 		#
@@ -126,7 +126,7 @@ Reload all plugins or the plugins matching the given prefix.
 
 				for module_name in modules:
 				#
-					module = NamedLoader.load_module(module_name)
+					module = NamedLoader._load_module(module_name)
 
 					if (module != None and hasattr(module, "plugin_deregistration")):
 					#
@@ -138,15 +138,15 @@ Reload all plugins or the plugins matching the given prefix.
 						except Exception as handled_exception:
 						#
 							if (Manager.log_handler != None): Manager.log_handler.error(handled_exception)
-							var_return = False
+							_return = False
 						#
 					#
-					else: var_return = False
+					else: _return = False
 				#
 			#
 		#
 
-		return var_return
+		return _return
 	#
 #
 

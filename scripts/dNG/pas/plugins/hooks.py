@@ -24,6 +24,7 @@ http://www.direct-netware.de/redirect.py?licenses;mpl2
 NOTE_END //n"""
 
 from threading import RLock
+from weakref import proxy, WeakSet
 
 from dNG.pas.data.binary import Binary
 from .manager import Manager
@@ -71,8 +72,8 @@ Call all functions registered for the hook with the specified parameters.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
-		var_return = None
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
+		_return = None
 
 		hooks = Hooks.get_instance()
 
@@ -80,18 +81,40 @@ Call all functions registered for the hook with the specified parameters.
 		#
 			if ("hook" not in params): params['hook'] = hook
 
-			for py_function in hooks[hook]:
+			for callback in hooks[hook]:
 			#
-				try: var_return = py_function(params, last_return = var_return)
+				try: _return = callback(params, last_return = _return)
 				except Exception as handled_exception:
 				#
 					if (Hooks.log_handler != None): Hooks.log_handler.error(handled_exception)
-					var_return = handled_exception
+					_return = handled_exception
 				#
 			#
 		#
 
-		return var_return
+		return _return
+	#
+
+	@staticmethod
+	def free():
+	#
+		"""
+Free all plugin hooks to enable garbage collection.
+
+:param package:
+
+:since: v0.1.00
+		"""
+
+		with Hooks.synchronized:
+		#
+			hooks = Hooks.get_instance()
+
+			for hook in hooks:
+			#
+				if (not isinstance(hooks[hook], WeakSet)): hooks[hook] = WeakSet(hooks[hook])
+			#
+		#
 	#
 
 	@staticmethod
@@ -127,13 +150,13 @@ Scans a plugin and loads its hooks.
 	#
 
 	@staticmethod
-	def register(hook, py_function, prepend = False, exclusive = False):
+	def register(hook, callback, prepend = False, exclusive = False):
 	#
 		"""
 Register a python function for the hook.
 
 :param hook: Hook-ID
-:param py_function: Python function to be registered
+:param callback: Python function to be registered
 :param prepend: Add function at the beginning of the stack if true.
 :param exclusive: Add the given function exclusively.
 
@@ -142,17 +165,17 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.register({0}, py_function, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.register({0}, callback, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
 
 		hooks = Hooks.get_instance()
 
-		if (exclusive): hooks[hook] = [ py_function ]
+		if (exclusive): hooks[hook] = [ callback ]
 		else:
 		#
 			if (hook not in hooks): hooks[hook] = [ ]
 
-			if (prepend): hooks[hook].insert(0, py_function)
-			else: hooks[hook].append(py_function)
+			if (prepend): hooks[hook].insert(0, callback)
+			else: hooks[hook].append(callback)
 		#
 	#
 
@@ -167,27 +190,27 @@ Sets the log_handler.
 :since: v0.1.00
 		"""
 
-		Hooks.log_handler = log_handler
+		Hooks.log_handler = proxy(log_handler)
 	#
 
 	@staticmethod
-	def unregister(hook, py_function):
+	def unregister(hook, callback):
 	#
 		"""
 Unregister a python function from the hook.
 
 :param hook: Hook-ID
-:param py_function: Python function to be unregistered
+:param callback: Python function to be unregistered
 
 :since: v0.1.00
 		"""
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -pluginHooks.unregister({0}, py_function)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.unregister({0}, callback)- (#echo(__LINE__)#)".format(hook))
 
 		hooks = Hooks.get_instance()
-		if (hook in hooks and py_function in hooks[hook]): del(hooks[hook][hooks[hook].index(py_function)])
+		if (hook in hooks and callback in hooks[hook]): del(hooks[hook][hooks[hook].index(callback)])
 	#
 #
 
