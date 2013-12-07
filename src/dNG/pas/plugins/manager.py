@@ -52,7 +52,7 @@ Dict of loaded plugins
 	#
 		"""
 Load and register all plugins for the given plugin name and prefix (defaults
-to "dNG.pas.plugins".
+to "dNG.pas.plugins").
 
 :param plugin: Plugin name
 :param prefix: Plugin name prefix

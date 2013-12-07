@@ -23,10 +23,10 @@ http://www.direct-netware.de/redirect.py?licenses;mpl2
 ----------------------------------------------------------------------------
 NOTE_END //n"""
 
-from threading import RLock
 from weakref import proxy, WeakSet
 
 from dNG.pas.data.binary import Binary
+from dNG.pas.runtime.instance_lock import InstanceLock
 from .manager import Manager
 
 class Hooks(dict):
@@ -47,14 +47,14 @@ The Hooks class provides hook-based Python plugins.
 	"""
 Registered hook instance
 	"""
+	instance_lock = InstanceLock()
+	"""
+Thread safety lock
+	"""
 	log_handler = None
 	"""
-The log_handler is called whenever debug messages should be logged or errors
+The LogHandler is called whenever debug messages should be logged or errors
 happened.
-	"""
-	synchronized = RLock()
-	"""
-Lock used in multi thread environments.
 	"""
 
 	@staticmethod
@@ -101,12 +101,10 @@ Call all functions registered for the hook with the specified parameters.
 		"""
 Free all plugin hooks to enable garbage collection.
 
-:param package:
-
 :since: v0.1.00
 		"""
 
-		with Hooks.synchronized:
+		with Hooks.instance_lock:
 		#
 			hooks = Hooks.get_instance()
 
@@ -127,7 +125,7 @@ Get the hooks singleton.
 :since:  v0.1.00
 		"""
 
-		with Hooks.synchronized:
+		with Hooks.instance_lock:
 		#
 			if (Hooks.instance == None): Hooks.instance = Hooks()
 		#
@@ -141,7 +139,7 @@ Get the hooks singleton.
 		"""
 Scans a plugin and loads its hooks.
 
-:param package:
+:param plugin: Plugin name
 
 :since: v0.1.00
 		"""
@@ -169,23 +167,25 @@ Register a python function for the hook.
 
 		hooks = Hooks.get_instance()
 
-		if (exclusive): hooks[hook] = [ callback ]
-		else:
+		if (hook not in hooks or (not isinstance(hooks[hook], WeakSet))):
 		#
-			if (hook not in hooks): hooks[hook] = [ ]
+			if (exclusive): hooks[hook] = [ callback ]
+			else:
+			#
+				if (hook not in hooks): hooks[hook] = [ ]
 
-			if (prepend): hooks[hook].insert(0, callback)
-			else: hooks[hook].append(callback)
-		#
+				if (prepend): hooks[hook].insert(0, callback)
+				else: hooks[hook].append(callback)
+			#
 	#
 
 	@staticmethod
 	def set_log_handler(log_handler):
 	#
 		"""
-Sets the log_handler.
+Sets the LogHandler.
 
-:param log_handler: log_handler to use
+:param log_handler: LogHandler to use
 
 :since: v0.1.00
 		"""
@@ -210,7 +210,7 @@ Unregister a python function from the hook.
 		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.unregister({0}, callback)- (#echo(__LINE__)#)".format(hook))
 
 		hooks = Hooks.get_instance()
-		if (hook in hooks and callback in hooks[hook]): del(hooks[hook][hooks[hook].index(callback)])
+		if (hook in hooks and callback in hooks[hook]): hooks[hook].remove(callback)
 	#
 #
 
