@@ -125,9 +125,13 @@ Get the hooks singleton.
 :since:  v0.1.00
 		"""
 
-		with Hooks.instance_lock:
+		if (Hooks.instance == None):
 		#
-			if (Hooks.instance == None): Hooks.instance = Hooks()
+			# Instance could be created in another thread so check again
+			with Hooks.instance_lock:
+			#
+				if (Hooks.instance == None): Hooks.instance = Hooks()
+			#
 		#
 
 		return Hooks.instance
