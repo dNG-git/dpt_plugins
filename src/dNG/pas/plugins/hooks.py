@@ -70,6 +70,8 @@ Call all functions registered for the hook with the specified parameters.
 :since:  v0.1.00
 		"""
 
+		# pylint: disable=broad-except
+
 		hook = Binary.str(hook)
 
 		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))

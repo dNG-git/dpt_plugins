@@ -61,6 +61,8 @@ to "dNG.pas.plugins").
 :since:  v0.1.00
 		"""
 
+		# pylint: disable=broad-except
+
 		_return = False
 
 		if (prefix == None): prefix = "dNG.pas.plugins"
@@ -115,6 +117,8 @@ Reload all plugins or the plugins matching the given prefix.
 :return: (bool) True on success
 :since:  v0.1.00
 		"""
+
+		# pylint: disable=broad-except
 
 		_return = True
 
