@@ -169,7 +169,7 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.register({0}, callback, prepend, exclusive)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
 
 		hooks = Hooks.get_instance()
 
@@ -213,7 +213,7 @@ Unregister a python function from the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.unregister({0}, callback)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
 
 		hooks = Hooks.get_instance()
 		if (hook in hooks and callback in hooks[hook]): hooks[hook].remove(callback)
