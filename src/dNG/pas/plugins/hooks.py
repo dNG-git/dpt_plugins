@@ -114,6 +114,8 @@ Free all plugin hooks to enable garbage collection.
 			#
 				if (not isinstance(hooks[hook], WeakSet)): hooks[hook] = WeakSet(hooks[hook])
 			#
+
+			Hooks.log_handler = None
 		#
 	#
 
@@ -196,7 +198,7 @@ Sets the LogHandler.
 :since: v0.1.00
 		"""
 
-		Hooks.log_handler = proxy(log_handler)
+		Hooks.log_handler = log_handler
 	#
 
 	@staticmethod
