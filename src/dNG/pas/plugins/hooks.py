@@ -182,8 +182,11 @@ Register a python function for the hook.
 			#
 				if (hook not in hooks): hooks[hook] = [ ]
 
-				if (prepend): hooks[hook].insert(0, callback)
-				else: hooks[hook].append(callback)
+				if (callback not in hooks[hook]):
+				#
+					if (prepend): hooks[hook].insert(0, callback)
+					else: hooks[hook].append(callback)
+				#
 			#
 	#
 
