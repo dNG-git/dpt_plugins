@@ -23,7 +23,7 @@ http://www.direct-netware.de/redirect.py?licenses;mpl2
 ----------------------------------------------------------------------------
 NOTE_END //n"""
 
-from weakref import proxy, WeakSet
+from weakref import WeakSet
 
 from dNG.pas.data.binary import Binary
 from dNG.pas.runtime.instance_lock import InstanceLock
@@ -58,12 +58,12 @@ happened.
 	"""
 
 	@staticmethod
-	def call(hook, **params):
+	def call(_hook, **params):
 	#
 		"""
 Call all functions registered for the hook with the specified parameters.
 
-:param hook: Hook-ID
+:param _hook: Hook-ID
 :param params: Keyword parameters
 
 :return: (mixed) Hook results; None if not defined
@@ -72,18 +72,18 @@ Call all functions registered for the hook with the specified parameters.
 
 		# pylint: disable=broad-except
 
-		hook = Binary.str(hook)
+		_hook = Binary.str(_hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(hook))
+		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(_hook))
 		_return = None
 
 		hooks = Hooks.get_instance()
 
-		if (hook in hooks and type(hooks[hook]) == list):
+		if (_hook in hooks and type(hooks[_hook]) == list):
 		#
-			if ("hook" not in params): params['hook'] = hook
+			if ("hook" not in params): params['hook'] = _hook
 
-			for callback in hooks[hook]:
+			for callback in hooks[_hook]:
 			#
 				try: _return = callback(params, last_return = _return)
 				except Exception as handled_exception:
