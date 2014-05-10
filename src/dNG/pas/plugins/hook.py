@@ -27,9 +27,10 @@ from weakref import WeakSet
 
 from dNG.pas.data.binary import Binary
 from dNG.pas.runtime.instance_lock import InstanceLock
+from dNG.pas.runtime.value_exception import ValueException
 from .manager import Manager
 
-class Hooks(dict):
+class Hook(dict):
 #
 	"""
 The Hooks class provides hook-based Python plugins.
@@ -58,13 +59,12 @@ happened.
 	"""
 
 	@staticmethod
-	def call(_hook, **params):
+	def call(_hook, **kwargs):
 	#
 		"""
 Call all functions registered for the hook with the specified parameters.
 
 :param _hook: Hook-ID
-:param params: Keyword parameters
 
 :return: (mixed) Hook results; None if not defined
 :since:  v0.1.00
@@ -74,23 +74,60 @@ Call all functions registered for the hook with the specified parameters.
 
 		_hook = Binary.str(_hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.call_hook_handler({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0}, params)- (#echo(__LINE__)#)".format(_hook))
 		_return = None
 
-		hooks = Hooks.get_instance()
+		hook_dict = Hook.get_instance()
+		params = kwargs
 
-		if (_hook in hooks and type(hooks[_hook]) == list):
+		if (_hook in hook_dict and type(hook_dict[_hook]) == list):
 		#
 			if ("hook" not in params): params['hook'] = _hook
 
-			for callback in hooks[_hook]:
+			for callback in hook_dict[_hook]:
 			#
 				try: _return = callback(params, last_return = _return)
 				except Exception as handled_exception:
 				#
-					if (Hooks.log_handler != None): Hooks.log_handler.error(handled_exception)
+					if (Hook.log_handler != None): Hook.log_handler.error(handled_exception)
 					_return = handled_exception
 				#
+			#
+		#
+
+		return _return
+	#
+
+	@staticmethod
+	def call_one(_hook, **kwargs):
+	#
+		"""
+Calls one function registered for the hook with the specified parameters.
+This has to be the only registered function and may throw exceptions.
+
+:param _hook: Hook-ID
+
+:return: (mixed) Hook result; None if not defined
+:since:  v0.1.00
+		"""
+
+		_hook = Binary.str(_hook)
+
+		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		_return = None
+
+		hook_dict = Hook.get_instance()
+		params = kwargs
+
+		if (_hook in hook_dict and type(hook_dict[_hook]) == list):
+		#
+			callbacks_count = len(hook_dict[_hook])
+
+			if (callbacks_count > 1): raise ValueException("More than one function registered for the called hook")
+			elif (callbacks_count > 0):
+			#
+				if ("hook" not in params): params['hook'] = _hook
+				_return = hook_dict[_hook][0](params)
 			#
 		#
 
@@ -106,16 +143,16 @@ Free all plugin hooks to enable garbage collection.
 :since: v0.1.00
 		"""
 
-		with Hooks.instance_lock:
+		with Hook.instance_lock:
 		#
-			hooks = Hooks.get_instance()
+			hook_dict = Hook.get_instance()
 
-			for hook in hooks:
+			for hook in hook_dict:
 			#
-				if (not isinstance(hooks[hook], WeakSet)): hooks[hook] = WeakSet(hooks[hook])
+				if (not isinstance(hook_dict[hook], WeakSet)): hook_dict[hook] = WeakSet(hook_dict[hook])
 			#
 
-			Hooks.log_handler = None
+			Hook.log_handler = None
 		#
 	#
 
@@ -125,20 +162,20 @@ Free all plugin hooks to enable garbage collection.
 		"""
 Get the hooks singleton.
 
-:return: (Hooks) Object on success
+:return: (Hook) Object on success
 :since:  v0.1.00
 		"""
 
-		if (Hooks.instance == None):
+		if (Hook.instance == None):
 		#
 			# Instance could be created in another thread so check again
-			with Hooks.instance_lock:
+			with Hook.instance_lock:
 			#
-				if (Hooks.instance == None): Hooks.instance = Hooks()
+				if (Hook.instance == None): Hook.instance = Hook()
 			#
 		#
 
-		return Hooks.instance
+		return Hook.instance
 	#
 
 	@staticmethod
@@ -171,21 +208,21 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
 
-		hooks = Hooks.get_instance()
+		hook_dict = Hook.get_instance()
 
-		if (hook not in hooks or (not isinstance(hooks[hook], WeakSet))):
+		if (hook not in hook_dict or (not isinstance(hook_dict[hook], WeakSet))):
 		#
-			if (exclusive): hooks[hook] = [ callback ]
+			if (exclusive): hook_dict[hook] = [ callback ]
 			else:
 			#
-				if (hook not in hooks): hooks[hook] = [ ]
+				if (hook not in hook_dict): hook_dict[hook] = [ ]
 
-				if (callback not in hooks[hook]):
+				if (callback not in hook_dict[hook]):
 				#
-					if (prepend): hooks[hook].insert(0, callback)
-					else: hooks[hook].append(callback)
+					if (prepend): hook_dict[hook].insert(0, callback)
+					else: hook_dict[hook].append(callback)
 				#
 			#
 	#
@@ -201,7 +238,7 @@ Sets the LogHandler.
 :since: v0.1.00
 		"""
 
-		Hooks.log_handler = log_handler
+		Hook.log_handler = log_handler
 	#
 
 	@staticmethod
@@ -218,10 +255,10 @@ Unregister a python function from the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hooks.log_handler != None): Hooks.log_handler.debug("#echo(__FILEPATH__)# -Hooks.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
 
-		hooks = Hooks.get_instance()
-		if (hook in hooks and callback in hooks[hook]): hooks[hook].remove(callback)
+		hook_dict = Hook.get_instance()
+		if (hook in hook_dict and callback in hook_dict[hook]): hook_dict[hook].remove(callback)
 	#
 #
 
