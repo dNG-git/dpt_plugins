@@ -42,7 +42,7 @@ class Manager(NamedLoader):
              Mozilla Public License, v. 2.0
 	"""
 
-	plugins = { }
+	_plugins = { }
 	"""
 Dict of loaded plugins
 	"""
@@ -84,19 +84,19 @@ to "dNG.pas.plugins").
 					module_name = "{0}.{1}".format(package, dir_entry[:-3])
 					module = NamedLoader._load_module(module_name)
 
-					if (module != None and hasattr(module, "plugin_registration")):
+					if (module != None and hasattr(module, "register_plugin")):
 					#
 						try:
 						#
-							if (package not in Manager.plugins): Manager.plugins[package] = [ ]
-							if (module_name not in Manager.plugins[package]): Manager.plugins[package].append(module_name)
+							if (package not in Manager._plugins): Manager._plugins[package] = [ ]
+							if (module_name not in Manager._plugins[package]): Manager._plugins[package].append(module_name)
 
-							module.plugin_registration()
+							module.register_plugin()
 							_return = True
 						#
 						except Exception as handled_exception:
 						#
-							if (Manager.log_handler != None): Manager.log_handler.error(handled_exception)
+							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception)
 						#
 					#
 				#
@@ -122,26 +122,26 @@ Reload all plugins or the plugins matching the given prefix.
 
 		_return = True
 
-		for package in Manager.plugins:
+		for package in Manager._plugins:
 		#
 			if (prefix == None or package.startswith(prefix)):
 			#
-				modules = Manager.plugins[package]
+				modules = Manager._plugins[package]
 
 				for module_name in modules:
 				#
 					module = NamedLoader._load_module(module_name)
 
-					if (module != None and hasattr(module, "plugin_deregistration")):
+					if (module != None and hasattr(module, "unregister_plugin")):
 					#
 						try:
 						#
-							module.plugin_deregistration()
-							module.plugin_registration()
+							module.unregister_plugin()
+							module.register_plugin()
 						#
 						except Exception as handled_exception:
 						#
-							if (Manager.log_handler != None): Manager.log_handler.error(handled_exception)
+							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception)
 							_return = False
 						#
 					#

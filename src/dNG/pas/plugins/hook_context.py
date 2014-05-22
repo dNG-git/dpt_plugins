@@ -39,6 +39,8 @@ Provides an call context to provide "before", "after" and "exception" hooks.
              Mozilla Public License, v. 2.0
 	"""
 
+	# pylint: disable=invalid-name
+
 	def __init__(self, hook_prefix, **kwargs):
 	#
 		"""

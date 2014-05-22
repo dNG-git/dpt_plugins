@@ -44,15 +44,15 @@ The Hooks class provides hook-based Python plugins.
              Mozilla Public License, v. 2.0
 	"""
 
-	instance = None
+	_instance = None
 	"""
 Registered hook instance
 	"""
-	instance_lock = InstanceLock()
+	_instance_lock = InstanceLock()
 	"""
 Thread safety lock
 	"""
-	log_handler = None
+	_log_handler = None
 	"""
 The LogHandler is called whenever debug messages should be logged or errors
 happened.
@@ -74,7 +74,7 @@ Call all functions registered for the hook with the specified parameters.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0}, params)- (#echo(__LINE__)#)".format(_hook))
 		_return = None
 
 		hook_dict = Hook.get_instance()
@@ -89,7 +89,7 @@ Call all functions registered for the hook with the specified parameters.
 				try: _return = callback(params, last_return = _return)
 				except Exception as handled_exception:
 				#
-					if (Hook.log_handler != None): Hook.log_handler.error(handled_exception)
+					if (Hook._log_handler != None): Hook._log_handler.error(handled_exception)
 					_return = handled_exception
 				#
 			#
@@ -113,7 +113,7 @@ This has to be the only registered function and may throw exceptions.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0}, params)- (#echo(__LINE__)#)".format(_hook))
 		_return = None
 
 		hook_dict = Hook.get_instance()
@@ -143,7 +143,7 @@ Free all plugin hooks to enable garbage collection.
 :since: v0.1.00
 		"""
 
-		with Hook.instance_lock:
+		with Hook._instance_lock:
 		#
 			hook_dict = Hook.get_instance()
 
@@ -152,7 +152,7 @@ Free all plugin hooks to enable garbage collection.
 				if (not isinstance(hook_dict[hook], WeakSet)): hook_dict[hook] = WeakSet(hook_dict[hook])
 			#
 
-			Hook.log_handler = None
+			Hook._log_handler = None
 		#
 	#
 
@@ -166,16 +166,15 @@ Get the hooks singleton.
 :since:  v0.1.00
 		"""
 
-		if (Hook.instance == None):
-		#
-			# Instance could be created in another thread so check again
-			with Hook.instance_lock:
+		if (Hook._instance == None):
+		# Thread safety
+			with Hook._instance_lock:
 			#
-				if (Hook.instance == None): Hook.instance = Hook()
+				if (Hook._instance == None): Hook._instance = Hook()
 			#
 		#
 
-		return Hook.instance
+		return Hook._instance
 	#
 
 	@staticmethod
@@ -208,7 +207,7 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
 
 		hook_dict = Hook.get_instance()
 
@@ -238,7 +237,7 @@ Sets the LogHandler.
 :since: v0.1.00
 		"""
 
-		Hook.log_handler = log_handler
+		Hook._log_handler = log_handler
 	#
 
 	@staticmethod
@@ -255,7 +254,7 @@ Unregister a python function from the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook.log_handler != None): Hook.log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
 
 		hook_dict = Hook.get_instance()
 		if (hook in hook_dict and callback in hook_dict[hook]): hook_dict[hook].remove(callback)
