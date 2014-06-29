@@ -2,10 +2,6 @@
 ##j## BOF
 
 """
-dNG.pas.plugins.Manager
-"""
-"""n// NOTE
-----------------------------------------------------------------------------
 direct PAS
 Python Application Services
 ----------------------------------------------------------------------------
@@ -20,8 +16,7 @@ http://www.direct-netware.de/redirect.py?licenses;mpl2
 ----------------------------------------------------------------------------
 #echo(pasPluginsVersion)#
 #echo(__FILEPATH__)#
-----------------------------------------------------------------------------
-NOTE_END //n"""
+"""
 
 from os import path
 import os
@@ -96,7 +91,7 @@ to "dNG.pas.plugins").
 						#
 						except Exception as handled_exception:
 						#
-							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception)
+							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
 						#
 					#
 				#
@@ -141,7 +136,7 @@ Reload all plugins or the plugins matching the given prefix.
 						#
 						except Exception as handled_exception:
 						#
-							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception)
+							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
 							_return = False
 						#
 					#

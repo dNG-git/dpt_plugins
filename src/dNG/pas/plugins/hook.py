@@ -2,10 +2,6 @@
 ##j## BOF
 
 """
-Our main abstraction layer for plugins.
-"""
-"""n// NOTE
-----------------------------------------------------------------------------
 direct PAS
 Python Application Services
 ----------------------------------------------------------------------------
@@ -20,8 +16,7 @@ http://www.direct-netware.de/redirect.py?licenses;mpl2
 ----------------------------------------------------------------------------
 #echo(pasPluginsVersion)#
 #echo(__FILEPATH__)#
-----------------------------------------------------------------------------
-NOTE_END //n"""
+"""
 
 from weakref import WeakSet
 
@@ -74,7 +69,7 @@ Call all functions registered for the hook with the specified parameters.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
 		hook_dict = Hook.get_instance()
@@ -89,7 +84,7 @@ Call all functions registered for the hook with the specified parameters.
 				try: _return = callback(params, last_return = _return)
 				except Exception as handled_exception:
 				#
-					if (Hook._log_handler != None): Hook._log_handler.error(handled_exception)
+					if (Hook._log_handler != None): Hook._log_handler.error(handled_exception, context = "pas_plugins")
 					_return = handled_exception
 				#
 			#
@@ -113,7 +108,7 @@ This has to be the only registered function and may throw exceptions.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0}, params)- (#echo(__LINE__)#)".format(_hook))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
 		hook_dict = Hook.get_instance()
@@ -207,7 +202,7 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r}, prepend, exclusive)- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
 		hook_dict = Hook.get_instance()
 
@@ -254,7 +249,7 @@ Unregister a python function from the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)".format(hook, callback))
+		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
 		hook_dict = Hook.get_instance()
 		if (hook in hook_dict and callback in hook_dict[hook]): hook_dict[hook].remove(callback)
