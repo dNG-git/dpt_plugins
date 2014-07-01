@@ -65,7 +65,7 @@ to "dNG.pas.plugins").
 
 		if (NamedLoader._load_package(package) != None):
 		#
-			package_path = path.normpath("{0}/{1}".format(Manager._get_loader().get_base_dir(), package.replace(".", path.sep)))
+			package_path = path.join(Manager._get_loader().get_base_dir(), package.replace(".", path.sep))
 			if (not os.access(package_path, os.R_OK)): package_path = None
 		#
 		else: package_path = None
