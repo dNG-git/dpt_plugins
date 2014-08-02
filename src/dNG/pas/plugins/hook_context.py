@@ -92,13 +92,16 @@ python.org: Enter the runtime context related to this object.
 		"""
 python.org: Exit the runtime context related to this object.
 
-:since: v0.1.01
+:return: (bool) True to suppress exceptions
+:since:  v0.1.01
 		"""
 
 		# pylint: disable=star-args
 
 		if (exc_type == None and exc_value == None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
 		else: Hook.call("{0}.exception".format(self.hook_prefix), **self.kwargs)
+
+		return False
 	#
 #
 

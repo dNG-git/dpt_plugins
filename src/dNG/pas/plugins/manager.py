@@ -22,6 +22,7 @@ from os import path
 import os
 
 from dNG.pas.module.named_loader import NamedLoader
+from dNG.pas.runtime.exception_log_trap import ExceptionLogTrap
 
 class Manager(NamedLoader):
 #
@@ -56,8 +57,6 @@ to "dNG.pas.plugins").
 :since:  v0.1.00
 		"""
 
-		# pylint: disable=broad-except
-
 		_return = False
 
 		if (prefix == None): prefix = "dNG.pas.plugins"
@@ -81,17 +80,13 @@ to "dNG.pas.plugins").
 
 					if (module != None and hasattr(module, "register_plugin")):
 					#
-						try:
+						with ExceptionLogTrap("pas_plugins"):
 						#
 							if (package not in Manager._plugins): Manager._plugins[package] = [ ]
 							if (module_name not in Manager._plugins[package]): Manager._plugins[package].append(module_name)
 
 							module.register_plugin()
 							_return = True
-						#
-						except Exception as handled_exception:
-						#
-							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
 						#
 					#
 				#
