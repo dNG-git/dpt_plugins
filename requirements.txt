@@ -1,3 +1,1 @@
--e git+http://git.direct-netware.de/py/builder_suite/#egg=builderSuite
--e git+http://git.direct-netware.de/py/file/#egg=pyFile
--e git+http://git.direct-netware.de/py/json/#egg=pyJson
+-e git+http://git.direct-netware.de/pas/core/#egg=pas_core
