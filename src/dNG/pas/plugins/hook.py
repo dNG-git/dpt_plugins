@@ -19,11 +19,12 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 """
 
 from copy import copy
-from weakref import WeakSet
+from weakref import ref
 
 from dNG.pas.data.binary import Binary
 from dNG.pas.runtime.instance_lock import InstanceLock
 from dNG.pas.runtime.value_exception import ValueException
+from dNG.pas.runtime.weakref_method import WeakrefMethod
 from .manager import Manager
 
 class Hook(dict):
@@ -43,6 +44,10 @@ The Hooks class provides hook-based Python plugins.
 	_instance = None
 	"""
 Registered hook instance
+	"""
+	_instance_freed = False
+	"""
+True after "free()" has been called
 	"""
 	_instance_lock = InstanceLock()
 	"""
@@ -73,21 +78,30 @@ Call all functions registered for the hook with the specified parameters.
 		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
-		hook_dict = Hook.get_instance()
+		hook_registry = Hook.get_instance()
 		params = kwargs
 
-		if (_hook in hook_dict and type(hook_dict[_hook]) == list):
+		if (_hook in hook_registry and (not Hook._instance_freed)):
 		#
 			if ("hook" not in params): params['hook'] = _hook
-			hooks = (hook_dict[_hook].copy() if (hasattr(hook_dict[_hook], "copy")) else copy(hook_dict[_hook]))
+			hooks = (hook_registry[_hook].copy() if (hasattr(hook_registry[_hook], "copy")) else copy(hook_registry[_hook]))
 
-			for callback in hooks:
+			for _callback in hooks:
 			#
-				try: _return = callback(params, last_return = _return)
-				except Exception as handled_exception:
+				callback = (_callback()
+				            if (isinstance(_callback, WeakrefMethod) or type(_callback) == ref) else
+				            _callback
+				           )
+
+				if (callback == None): Hook.unregister(_hook, _callback)
+				else:
 				#
-					if (Hook._log_handler != None): Hook._log_handler.error(handled_exception, context = "pas_plugins")
-					_return = handled_exception
+					try: _return = callback(params, last_return = _return)
+					except Exception as handled_exception:
+					#
+						if (Hook._log_handler != None): Hook._log_handler.error(handled_exception, context = "pas_plugins")
+						_return = handled_exception
+					#
 				#
 			#
 		#
@@ -113,20 +127,26 @@ This has to be the only registered function and may throw exceptions.
 		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
-		hook_dict = Hook.get_instance()
+		hook_registry = Hook.get_instance()
 		params = kwargs
 
-		if (_hook in hook_dict and type(hook_dict[_hook]) == list):
+		if (_hook in hook_registry and (not Hook._instance_freed)):
 		#
-			hooks = (hook_dict[_hook].copy() if (hasattr(hook_dict[_hook], "copy")) else copy(hook_dict[_hook]))
+			if ("hook" not in params): params['hook'] = _hook
+			hooks = (hook_registry[_hook].copy() if (hasattr(hook_registry[_hook], "copy")) else copy(hook_registry[_hook]))
 
 			callbacks_count = len(hooks)
 
 			if (callbacks_count > 1): raise ValueException("More than one function registered for the called hook")
 			elif (callbacks_count > 0):
 			#
-				if ("hook" not in params): params['hook'] = _hook
-				_return = hooks[0](params)
+				callback = (hooks[0]()
+				            if (isinstance(hooks[0], WeakrefMethod)) else
+				            hooks[0]
+				           )
+
+				if (callback == None): Hook.unregister(_hook, hooks[0])
+				else: _return = callback(params)
 			#
 		#
 
@@ -144,13 +164,10 @@ Free all plugin hooks to enable garbage collection.
 
 		with Hook._instance_lock:
 		#
-			hook_dict = Hook.get_instance()
+			hook_registry = Hook.get_instance()
+			hook_registry.clear()
 
-			for hook in hook_dict:
-			#
-				if (not isinstance(hook_dict[hook], WeakSet)): hook_dict[hook] = WeakSet(hook_dict[hook])
-			#
-
+			Hook._instance_freed = True
 			Hook._log_handler = None
 		#
 	#
@@ -191,7 +208,7 @@ Scans a plugin and loads its hooks.
 	#
 
 	@staticmethod
-	def register(hook, callback, prepend = False, exclusive = False):
+	def register(hook, callback, prepend = False, exclusive = False, _weakref_only = False):
 	#
 		"""
 Register a python function for the hook.
@@ -200,6 +217,7 @@ Register a python function for the hook.
 :param callback: Python function to be registered
 :param prepend: Add function at the beginning of the stack if true.
 :param exclusive: Add the given function exclusively.
+:param _weakref_only: True to use a weak reference
 
 :since: v0.1.00
 		"""
@@ -208,28 +226,53 @@ Register a python function for the hook.
 
 		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
-		hook_dict = Hook.get_instance()
+		hook_registry = Hook.get_instance()
 
-		if (hook not in hook_dict or (not isinstance(hook_dict[hook], WeakSet))):
+		if (not Hook._instance_freed):
 		#
 			with Hook._instance_lock:
 			# Thread safety
-				if (hook not in hook_dict or (not isinstance(hook_dict[hook], WeakSet))):
+				if (not Hook._instance_freed):
 				#
-					if (exclusive): hook_dict[hook] = [ callback ]
+					if (_weakref_only):
+					#
+						callback = (WeakrefMethod(callback)
+						            if (hasattr(callback, "__self__")) else
+						            ref(callback)
+						           )
+					#
+
+					if (exclusive): hook_registry[hook] = [ callback ]
 					else:
 					#
-						if (hook not in hook_dict): hook_dict[hook] = [ ]
+						if (hook not in hook_registry): hook_registry[hook] = [ ]
 
-						if (callback not in hook_dict[hook]):
+						if (callback not in hook_registry[hook]):
 						#
-							if (prepend): hook_dict[hook].insert(0, callback)
-							else: hook_dict[hook].append(callback)
+							if (prepend): hook_registry[hook].insert(0, callback)
+							else: hook_registry[hook].append(callback)
 						#
 					#
 				#
 			#
 		#
+	#
+
+	@staticmethod
+	def register_weakref(hook, callback, prepend = False, exclusive = False):
+	#
+		"""
+Register a weakly referenced python function for the hook.
+
+:param hook: Hook-ID
+:param callback: Python function to be registered
+:param prepend: Add function at the beginning of the stack if true.
+:param exclusive: Add the given function exclusively.
+
+:since: v0.1.03
+		"""
+
+		Hook.register(hook, callback, prepend, exclusive, True)
 	#
 
 	@staticmethod
@@ -262,13 +305,13 @@ Unregister a python function from the hook.
 
 		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
-		hook_dict = Hook.get_instance()
+		hook_registry = Hook.get_instance()
 
-		if (hook in hook_dict and callback in hook_dict[hook]):
+		if (hook in hook_registry and callback in hook_registry[hook]):
 		#
 			with Hook._instance_lock:
 			# Thread safety
-				if (hook in hook_dict and callback in hook_dict[hook]): hook_dict[hook].remove(callback)
+				if (hook in hook_registry and callback in hook_registry[hook]): hook_registry[hook].remove(callback)
 			#
 		#
 	#
