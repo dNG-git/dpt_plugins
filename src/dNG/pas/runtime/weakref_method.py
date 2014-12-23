@@ -68,7 +68,7 @@ python.org: Called when the instance is "called" as a function [..].
 		"""
 
 		instance = self._get_instance()
-		return (None if (instance == None) else getattr(instance, self.method_name))
+		return (None if (instance is None) else getattr(instance, self.method_name))
 	#
 
 	def __eq__(self, other):
@@ -87,7 +87,7 @@ as follows: x==y calls x.__eq__(y)
 
 		instance = self._get_instance()
 
-		return (instance != None
+		return (instance is not None
 		        and isinstance(other, WeakrefMethod)
 		        and instance == other._get_instance()
 		        and self.method_name == other._get_method_name()

@@ -75,7 +75,7 @@ Call all functions registered for the hook with the specified parameters.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
+		if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
 		hook_registry = Hook.get_instance()
@@ -93,13 +93,13 @@ Call all functions registered for the hook with the specified parameters.
 				            _callback
 				           )
 
-				if (callback == None): Hook.unregister(_hook, _callback)
+				if (callback is None): Hook.unregister(_hook, _callback)
 				else:
 				#
 					try: _return = callback(params, last_return = _return)
 					except Exception as handled_exception:
 					#
-						if (Hook._log_handler != None): Hook._log_handler.error(handled_exception, context = "pas_plugins")
+						if (Hook._log_handler is not None): Hook._log_handler.error(handled_exception, context = "pas_plugins")
 						_return = handled_exception
 					#
 				#
@@ -124,7 +124,7 @@ This has to be the only registered function and may throw exceptions.
 
 		_hook = Binary.str(_hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
+		if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
 		_return = None
 
 		hook_registry = Hook.get_instance()
@@ -145,7 +145,7 @@ This has to be the only registered function and may throw exceptions.
 				            hooks[0]
 				           )
 
-				if (callback == None): Hook.unregister(_hook, hooks[0])
+				if (callback is None): Hook.unregister(_hook, hooks[0])
 				else: _return = callback(params)
 			#
 		#
@@ -182,11 +182,11 @@ Get the hooks singleton.
 :since:  v0.1.00
 		"""
 
-		if (Hook._instance == None):
+		if (Hook._instance is None):
 		# Thread safety
 			with Hook._instance_lock:
 			#
-				if (Hook._instance == None): Hook._instance = Hook()
+				if (Hook._instance is None): Hook._instance = Hook()
 			#
 		#
 
@@ -224,7 +224,7 @@ Register a python function for the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
+		if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
 		hook_registry = Hook.get_instance()
 
@@ -303,7 +303,7 @@ Unregister a python function from the hook.
 
 		hook = Binary.str(hook)
 
-		if (Hook._log_handler != None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
+		if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.unregister({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
 
 		hook_registry = Hook.get_instance()
 

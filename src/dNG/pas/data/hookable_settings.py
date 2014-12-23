@@ -71,7 +71,7 @@ Checks if a given key is a defined setting.
 		"""
 
 		_return = True
-		if (Hook.call(self.hook, **self.params) == None): _return = (key in self.settings)
+		if (Hook.call(self.hook, **self.params) is None): _return = (key in self.settings)
 
 		return _return
 	#
@@ -89,8 +89,8 @@ Returns the value with the specified key.
 		"""
 
 		_return = Hook.call(self.hook, **self.params)
-		if (_return == None): _return = self.settings.get(key)
-		if (_return == None and default != None): _return = default
+		if (_return is None): _return = self.settings.get(key)
+		if (_return is None and default is not None): _return = default
 
 		return _return
 	#

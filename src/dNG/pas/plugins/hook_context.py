@@ -98,7 +98,7 @@ python.org: Exit the runtime context related to this object.
 
 		# pylint: disable=star-args
 
-		if (exc_type == None and exc_value == None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
+		if (exc_type is None and exc_value is None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
 		else: Hook.call("{0}.exception".format(self.hook_prefix), **self.kwargs)
 
 		return False

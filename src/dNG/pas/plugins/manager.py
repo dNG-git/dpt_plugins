@@ -59,17 +59,17 @@ to "dNG.pas.plugins").
 
 		_return = False
 
-		if (prefix == None): prefix = "dNG.pas.plugins"
+		if (prefix is None): prefix = "dNG.pas.plugins"
 		package = "{0}.{1}".format(prefix, plugin)
 
-		if (NamedLoader._load_package(package) != None):
+		if (NamedLoader._load_package(package) is not None):
 		#
 			package_path = path.join(Manager._get_loader().get_base_dir(), package.replace(".", path.sep))
 			if (not os.access(package_path, os.R_OK)): package_path = None
 		#
 		else: package_path = None
 
-		if (package_path != None and path.isdir(package_path)):
+		if (package_path is not None and path.isdir(package_path)):
 		#
 			for dir_entry in os.listdir(package_path):
 			#
@@ -78,7 +78,7 @@ to "dNG.pas.plugins").
 					module_name = "{0}.{1}".format(package, dir_entry[:-3])
 					module = NamedLoader._load_module(module_name)
 
-					if (module != None and hasattr(module, "register_plugin")):
+					if (module is not None and hasattr(module, "register_plugin")):
 					#
 						with ExceptionLogTrap("pas_plugins"):
 						#
@@ -114,7 +114,7 @@ Reload all plugins or the plugins matching the given prefix.
 
 		for package in Manager._plugins:
 		#
-			if (prefix == None or package.startswith(prefix)):
+			if (prefix is None or package.startswith(prefix)):
 			#
 				modules = Manager._plugins[package]
 
@@ -122,7 +122,7 @@ Reload all plugins or the plugins matching the given prefix.
 				#
 					module = NamedLoader._load_module(module_name)
 
-					if (module != None and hasattr(module, "unregister_plugin")):
+					if (module is not None and hasattr(module, "unregister_plugin")):
 					#
 						try:
 						#
@@ -131,7 +131,7 @@ Reload all plugins or the plugins matching the given prefix.
 						#
 						except Exception as handled_exception:
 						#
-							if (Manager._log_handler != None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
+							if (Manager._log_handler is not None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
 							_return = False
 						#
 					#
