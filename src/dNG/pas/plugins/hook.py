@@ -89,7 +89,7 @@ Call all functions registered for the hook with the specified parameters.
 			for _callback in hooks:
 			#
 				callback = (_callback()
-				            if (isinstance(_callback, WeakrefMethod) or type(_callback) == ref) else
+				            if (isinstance(_callback, WeakrefMethod) or type(_callback) is ref) else
 				            _callback
 				           )
 
