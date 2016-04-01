@@ -18,8 +18,29 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
+from copy import copy
 from os import path
 import os
+
+_MODE_IMP = 1
+"""
+Use "imp" based methods for import
+"""
+_MODE_IMPORT_MODULE = 2
+"""
+Use "import_module" for import
+"""
+
+_mode = _MODE_IMP
+
+try:
+
+	from importlib import reload
+	import importlib
+
+	_mode = _MODE_IMPORT_MODULE
+
+except ImportError: from imp import reload
 
 from dNG.pas.module.named_loader import NamedLoader
 from dNG.pas.runtime.exception_log_trap import ExceptionLogTrap
@@ -114,29 +135,41 @@ Reload all plugins or the plugins matching the given prefix.
 
 		for package in Manager._plugins:
 		#
-			if (prefix is None or package.startswith(prefix)):
+			if (prefix is None or package.startswith("{0}.".format(prefix))):
 			#
-				modules = Manager._plugins[package]
+				modules = (Manager._plugins[package].copy()
+				           if (hasattr(Manager._plugins[package], "copy")) else
+				           copy(Manager._plugins[package])
+				          )
+
+				if (_mode == _MODE_IMPORT_MODULE
+				    and hasattr(importlib, "invalidate_caches")
+				   ): importlib.invalidate_caches()
 
 				for module_name in modules:
 				#
-					module = NamedLoader._load_module(module_name)
+					try:
+					#
+						module = NamedLoader._get_module(module_name)
 
-					if (module is not None and hasattr(module, "unregister_plugin")):
+						if (module is not None and hasattr(module, "unregister_plugin")): module.unregister_plugin()
+
+						try: reload(module)
+						except Exception: Manager._plugins[package].remove(module_name)
+
+						if (module is not None and hasattr(module, "on_plugin_reloaded")): module.on_plugin_reloaded()
 					#
-						try:
-						#
-							module.unregister_plugin()
-							module.register_plugin()
-						#
-						except Exception as handled_exception:
-						#
-							if (Manager._log_handler is not None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
-							_return = False
-						#
+					except Exception as handled_exception:
 					#
-					else: _return = False
+						if (Manager._log_handler is not None): Manager._log_handler.error(handled_exception, context = "pas_plugins")
+						_return = False
+					#
 				#
+
+				package_prefix = (package[:package.rindex(".")] if (prefix is None) else prefix)
+				package_plugin = package[1 + package.rindex("."):]
+
+				Manager.load_plugin(package_plugin, package_prefix)
 			#
 		#
 
