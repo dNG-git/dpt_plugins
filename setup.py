@@ -38,9 +38,7 @@ from os import path
 
 with TemporaryDirectory(dir = ".") as build_directory:
 #
-	parameters = { "install_data_plain_copy_extensions": "json",
-	               "pasPluginsVersion": get_version()
-	             }
+	parameters = { "pasPluginsVersion": get_version() }
 
 	InstallData.set_build_target_path(build_directory)
 	InstallData.set_build_target_parameters(parameters)
@@ -51,10 +49,12 @@ with TemporaryDirectory(dir = ".") as build_directory:
 	      version = get_version(),
 	      description = "Python Application Services",
 	      long_description = """"pas_plugins" provides the infrastructure to support a hook based plugin system.""",
-	      author = "direct Netware Group",
+	      author = "direct Netware Group et al.",
 	      author_email = "web@direct-netware.de",
 	      license = "MPL2",
 	      url = "https://www.direct-netware.de/redirect?pas;plugins",
+
+	      platforms = [ "any" ],
 
 	      package_dir = { "": _build_path },
 	      packages = [ "dNG" ],
