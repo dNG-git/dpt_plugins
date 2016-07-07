@@ -18,7 +18,8 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-from dNG.pas.plugins.hook import Hook
+from dNG.plugins.hook import Hook
+
 from .settings import Settings
 
 class HookableSettings(object):
@@ -26,13 +27,13 @@ class HookableSettings(object):
 	"""
 "HookableSettings" provide a hook based solution to set custom values for
 requested settings in a given context and fall back to the default value
-otherwise. Please note that NULL is not supported as a valid setting value.
+otherwise. Please note that None is not supported as a valid setting value.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -42,7 +43,7 @@ otherwise. Please note that NULL is not supported as a valid setting value.
 		"""
 Constructor __init__(HookableSettings)
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		self.hook = hook
@@ -67,7 +68,7 @@ Checks if a given key is a defined setting.
 :param key: Settings key
 
 :return: (bool) True if defined
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_return = True
@@ -85,7 +86,7 @@ Returns the value with the specified key.
 :param default: Default value if not set
 
 :return: (mixed) Value
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_return = Hook.call(self.hook, **self.params)

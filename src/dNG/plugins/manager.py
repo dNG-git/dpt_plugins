@@ -42,19 +42,19 @@ try:
 
 except ImportError: from imp import reload
 
-from dNG.pas.module.named_loader import NamedLoader
-from dNG.pas.runtime.exception_log_trap import ExceptionLogTrap
+from dNG.module.named_loader import NamedLoader
+from dNG.runtime.exception_log_trap import ExceptionLogTrap
 
 class Manager(NamedLoader):
 #
 	"""
 "Manager" provides methods to handle plugins.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -69,18 +69,18 @@ Dict of loaded plugins
 	#
 		"""
 Load and register all plugins for the given plugin name and prefix (defaults
-to "dNG.pas.plugins").
+to "dNG.plugins").
 
 :param plugin: Plugin name
 :param prefix: Plugin name prefix
 
 :return: (bool) True on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_return = False
 
-		if (prefix is None): prefix = "dNG.pas.plugins"
+		if (prefix is None): prefix = "dNG.plugins"
 		package = "{0}.{1}".format(prefix, plugin)
 
 		if (NamedLoader._load_package(package) is not None):
@@ -126,7 +126,7 @@ Reload all plugins or the plugins matching the given prefix.
 :param prefix: Plugin prefix
 
 :return: (bool) True on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		# pylint: disable=broad-except

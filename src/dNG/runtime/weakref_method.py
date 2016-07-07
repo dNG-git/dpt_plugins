@@ -20,18 +20,18 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 
 from weakref import ref
 
-from dNG.pas.runtime.value_exception import ValueException
+from dNG.runtime.value_exception import ValueException
 
 class WeakrefMethod(object):
 #
 	"""
 This class provides a weak reference to an instance method.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.1.03
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -43,7 +43,7 @@ Constructor __init__(WeakrefMethod)
 
 :param method: Instance method to be bound
 
-:since: v0.1.03
+:since: v0.2.00
 		"""
 
 		if (not hasattr(method, "__self__")): raise ValueException("Instance method given is invalid")
@@ -64,7 +64,7 @@ Instance method name
 python.org: Called when the instance is "called" as a function [..].
 
 :return: (object) Bound method; None if garbage collected
-:since:  v0.1.03
+:since:  v0.2.00
 		"""
 
 		instance = self._get_instance()
@@ -80,7 +80,7 @@ as follows: x==y calls x.__eq__(y)
 :param other: Object to be compaired with
 
 :return: (bool) True if equal
-:since:  v0.1.03
+:since:  v0.2.00
 		"""
 
 		# pylint: disable=protected-access
@@ -103,7 +103,7 @@ as follows: x!=y and x<>y call x.__ne__(y)
 :param other: Object to be compaired with
 
 :return: (bool) True if not equal
-:since:  v0.1.03
+:since:  v0.2.00
 		"""
 
 		return (not (self == other))
@@ -115,7 +115,7 @@ as follows: x!=y and x<>y call x.__ne__(y)
 Returns the bound instance.
 
 :return: (object) Bound instance; None if garbage collected
-:since:  v0.1.03
+:since:  v0.2.00
 		"""
 
 		return self.instance()
@@ -127,7 +127,7 @@ Returns the bound instance.
 Returns the method name of this weak reference instance.
 
 :return: (str) Method name
-:since:  v0.1.03
+:since:  v0.2.00
 		"""
 
 		return self.instance()

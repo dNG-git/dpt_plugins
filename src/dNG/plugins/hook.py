@@ -21,10 +21,11 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from copy import copy
 from weakref import ref
 
-from dNG.pas.data.binary import Binary
-from dNG.pas.runtime.instance_lock import InstanceLock
-from dNG.pas.runtime.value_exception import ValueException
-from dNG.pas.runtime.weakref_method import WeakrefMethod
+from dNG.data.binary import Binary
+from dNG.runtime.instance_lock import InstanceLock
+from dNG.runtime.value_exception import ValueException
+from dNG.runtime.weakref_method import WeakrefMethod
+
 from .manager import Manager
 
 class Hook(dict):
@@ -32,11 +33,11 @@ class Hook(dict):
 	"""
 The Hooks class provides hook-based Python plugins.
 
-:author:     direct Netware Group
+:author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.1.00
+:since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
 	"""
@@ -68,7 +69,7 @@ Call all functions registered for the hook with the specified parameters.
 :param _hook: Hook-ID
 
 :return: (mixed) Hook results; None if not defined
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		# pylint: disable=broad-except
@@ -119,7 +120,7 @@ This has to be the only registered function and may throw exceptions.
 :param _hook: Hook-ID
 
 :return: (mixed) Hook result; None if not defined
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		_hook = Binary.str(_hook)
@@ -159,7 +160,7 @@ This has to be the only registered function and may throw exceptions.
 		"""
 Free all plugin hooks to enable garbage collection.
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		with Hook._instance_lock:
@@ -179,7 +180,7 @@ Free all plugin hooks to enable garbage collection.
 Get the hooks singleton.
 
 :return: (Hook) Object on success
-:since:  v0.1.00
+:since:  v0.2.00
 		"""
 
 		if (Hook._instance is None):
@@ -201,7 +202,7 @@ Scans a plugin and loads its hooks.
 
 :param plugin: Plugin name
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		Manager.load_plugin(plugin)
@@ -219,7 +220,7 @@ Register a python function for the hook.
 :param exclusive: Add the given function exclusively.
 :param _weakref_only: True to use a weak reference
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		hook = Binary.str(hook)
@@ -269,7 +270,7 @@ Register a weakly referenced python function for the hook.
 :param prepend: Add function at the beginning of the stack if true.
 :param exclusive: Add the given function exclusively.
 
-:since: v0.1.03
+:since: v0.2.00
 		"""
 
 		Hook.register(hook, callback, prepend, exclusive, True)
@@ -283,7 +284,7 @@ Sets the LogHandler.
 
 :param log_handler: LogHandler to use
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		Hook._log_handler = log_handler
@@ -298,7 +299,7 @@ Unregister a python function from the hook.
 :param hook: Hook-ID
 :param callback: Python function to be unregistered
 
-:since: v0.1.00
+:since: v0.2.00
 		"""
 
 		hook = Binary.str(hook)
