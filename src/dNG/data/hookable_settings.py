@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -23,8 +22,7 @@ from dNG.plugins.hook import Hook
 from .settings import Settings
 
 class HookableSettings(object):
-#
-	"""
+    """
 "HookableSettings" provide a hook based solution to set custom values for
 requested settings in a given context and fall back to the default value
 otherwise. Please note that None is not supported as a valid setting value.
@@ -36,50 +34,47 @@ otherwise. Please note that None is not supported as a valid setting value.
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	def __init__(self, hook, **kwargs):
-	#
-		"""
+    def __init__(self, hook, **kwargs):
+        """
 Constructor __init__(HookableSettings)
 
 :since: v0.2.00
-		"""
+        """
 
-		self.hook = hook
-		"""
+        self.hook = hook
+        """
 Hook called to get custom values
-		"""
-		self.params = kwargs
-		"""
+        """
+        self.params = kwargs
+        """
 Hook parameters used to provide context relevant information
-		"""
-		self.settings = Settings.get_dict()
-		"""
+        """
+        self.settings = Settings.get_dict()
+        """
 Settings instance
-		"""
-	#
+        """
+    #
 
-	def is_defined(self, key):
-	#
-		"""
+    def is_defined(self, key):
+        """
 Checks if a given key is a defined setting.
 
 :param key: Settings key
 
 :return: (bool) True if defined
 :since:  v0.2.00
-		"""
+        """
 
-		_return = True
-		if (Hook.call(self.hook, **self.params) is None): _return = (key in self.settings)
+        _return = True
+        if (Hook.call(self.hook, **self.params) is None): _return = (key in self.settings)
 
-		return _return
-	#
+        return _return
+    #
 
-	def get(self, key = None, default = None):
-	#
-		"""
+    def get(self, key = None, default = None):
+        """
 Returns the value with the specified key.
 
 :param key: Settings key
@@ -87,14 +82,12 @@ Returns the value with the specified key.
 
 :return: (mixed) Value
 :since:  v0.2.00
-		"""
+        """
 
-		_return = Hook.call(self.hook, **self.params)
-		if (_return is None): _return = self.settings.get(key)
-		if (_return is None and default is not None): _return = default
+        _return = Hook.call(self.hook, **self.params)
+        if (_return is None): _return = self.settings.get(key)
+        if (_return is None and default is not None): _return = default
 
-		return _return
-	#
+        return _return
+    #
 #
-
-##j## EOF

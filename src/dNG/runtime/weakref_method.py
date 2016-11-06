@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -23,8 +22,7 @@ from weakref import ref
 from dNG.runtime.value_exception import ValueException
 
 class WeakrefMethod(object):
-#
-	"""
+    """
 This class provides a weak reference to an instance method.
 
 :author:     direct Netware Group et al.
@@ -34,46 +32,43 @@ This class provides a weak reference to an instance method.
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	def __init__(self, method):
-	#
-		"""
+    def __init__(self, method):
+        """
 Constructor __init__(WeakrefMethod)
 
 :param method: Instance method to be bound
 
 :since: v0.2.00
-		"""
+        """
 
-		if (not hasattr(method, "__self__")): raise ValueException("Instance method given is invalid")
+        if (not hasattr(method, "__self__")): raise ValueException("Instance method given is invalid")
 
-		self.instance = ref(method.__self__)
-		"""
+        self.instance = ref(method.__self__)
+        """
 Weakly referenced instance
-		"""
-		self.method_name = method.__name__
-		"""
+        """
+        self.method_name = method.__name__
+        """
 Instance method name
-		"""
-	#
+        """
+    #
 
-	def __call__(self):
-	#
-		"""
+    def __call__(self):
+        """
 python.org: Called when the instance is "called" as a function [..].
 
 :return: (object) Bound method; None if garbage collected
 :since:  v0.2.00
-		"""
+        """
 
-		instance = self._get_instance()
-		return (None if (instance is None) else getattr(instance, self.method_name))
-	#
+        instance = self._get_instance()
+        return (None if (instance is None) else getattr(instance, self.method_name))
+    #
 
-	def __eq__(self, other):
-	#
-		"""
+    def __eq__(self, other):
+        """
 python.org: The correspondence between operator symbols and method names is
 as follows: x==y calls x.__eq__(y)
 
@@ -81,22 +76,21 @@ as follows: x==y calls x.__eq__(y)
 
 :return: (bool) True if equal
 :since:  v0.2.00
-		"""
+        """
 
-		# pylint: disable=protected-access
+        # pylint: disable=protected-access
 
-		instance = self._get_instance()
+        instance = self._get_instance()
 
-		return (instance is not None
-		        and isinstance(other, WeakrefMethod)
-		        and instance == other._get_instance()
-		        and self.method_name == other._get_method_name()
-		       )
-	#
+        return (instance is not None
+                and isinstance(other, WeakrefMethod)
+                and instance == other._get_instance()
+                and self.method_name == other._get_method_name()
+               )
+    #
 
-	def __ne__(self, other):
-	#
-		"""
+    def __ne__(self, other):
+        """
 python.org: The correspondence between operator symbols and method names is
 as follows: x!=y and x<>y call x.__ne__(y)
 
@@ -104,34 +98,30 @@ as follows: x!=y and x<>y call x.__ne__(y)
 
 :return: (bool) True if not equal
 :since:  v0.2.00
-		"""
+        """
 
-		return (not (self == other))
-	#
+        return (not (self == other))
+    #
 
-	def _get_instance(self):
-	#
-		"""
+    def _get_instance(self):
+        """
 Returns the bound instance.
 
 :return: (object) Bound instance; None if garbage collected
 :since:  v0.2.00
-		"""
+        """
 
-		return self.instance()
-	#
+        return self.instance()
+    #
 
-	def _get_method_name(self):
-	#
-		"""
+    def _get_method_name(self):
+        """
 Returns the method name of this weak reference instance.
 
 :return: (str) Method name
 :since:  v0.2.00
-		"""
+        """
 
-		return self.instance()
-	#
+        return self.instance()
+    #
 #
-
-##j## EOF

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-##j## BOF
 
 """
 direct PAS
@@ -21,8 +20,7 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from .hook import Hook
 
 class HookContext(object):
-#
-	"""
+    """
 Provides an call context to provide "before", "after" and "exception" hooks.
 
 :author:     direct Netware Group et al.
@@ -32,77 +30,70 @@ Provides an call context to provide "before", "after" and "exception" hooks.
 :since:      v0.2.00
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
-	"""
+    """
 
-	# pylint: disable=invalid-name
+    # pylint: disable=invalid-name
 
-	def __init__(self, hook_prefix, **kwargs):
-	#
-		"""
+    def __init__(self, hook_prefix, **kwargs):
+        """
 Constructor __init__(HookContext)
 
 :since: v0.2.00
-		"""
+        """
 
-		self.hook_prefix = hook_prefix
-		"""
+        self.hook_prefix = hook_prefix
+        """
 Prefix used for ".before", ".after" and ".exception" calls
-		"""
-		self.kwargs = kwargs
-		"""
+        """
+        self.kwargs = kwargs
+        """
 Keyword arguments used for hook calls
-		"""
-	#
+        """
+    #
 
-	def __call__(self, f):
-	#
-		"""
+    def __call__(self, f):
+        """
 python.org: Called when the instance is "called" as a function [..].
 
 :since: v0.2.00
-		"""
+        """
 
-		def decorator(*args, **kwargs):
-		#
-			"""
+        def decorator(*args, **kwargs):
+            """
 Decorator for wrapping a function or method with a call context.
-			"""
+            """
 
-			with self: return f(*args, **kwargs)
-		#
+            with self: return f(*args, **kwargs)
+        #
 
-		return decorator
-	#
+        return decorator
+    #
 
-	def __enter__(self):
-	#
-		"""
+    def __enter__(self):
+        """
 python.org: Enter the runtime context related to this object.
 
 :since: v0.2.00
-		"""
+        """
 
-		# pylint: disable=star-args
+        # pylint: disable=star-args
 
-		Hook.call("{0}.before".format(self.hook_prefix), **self.kwargs)
-	#
+        Hook.call("{0}.before".format(self.hook_prefix), **self.kwargs)
+    #
 
-	def __exit__(self, exc_type, exc_value, traceback):
-	#
-		"""
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
 python.org: Exit the runtime context related to this object.
 
 :return: (bool) True to suppress exceptions
 :since:  v0.2.00
-		"""
+        """
 
-		# pylint: disable=star-args
+        # pylint: disable=star-args
 
-		if (exc_type is None and exc_value is None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
-		else: Hook.call("{0}.exception".format(self.hook_prefix), **self.kwargs)
+        if (exc_type is None and exc_value is None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
+        else: Hook.call("{0}.exception".format(self.hook_prefix), **self.kwargs)
 
-		return False
-	#
+        return False
+    #
 #
-
-##j## EOF
