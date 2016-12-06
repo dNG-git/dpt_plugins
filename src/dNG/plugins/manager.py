@@ -17,9 +17,14 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
+# pylint: disable=import-error, no-name-in-module
+
 from copy import copy
 from os import path
 import os
+
+from dNG.module.named_loader import NamedLoader
+from dNG.runtime.exception_log_trap import ExceptionLogTrap
 
 _MODE_IMP = 1
 """
@@ -38,9 +43,6 @@ try:
 
     _mode = _MODE_IMPORT_MODULE
 except ImportError: from imp import reload
-
-from dNG.module.named_loader import NamedLoader
-from dNG.runtime.exception_log_trap import ExceptionLogTrap
 
 class Manager(NamedLoader):
     """
@@ -72,6 +74,8 @@ to "dNG.plugins").
 :return: (bool) True on success
 :since:  v0.2.00
         """
+
+        # pylint: disable=no-member
 
         _return = False
 
@@ -116,7 +120,7 @@ Reload all plugins or the plugins matching the given prefix.
 :since:  v0.2.00
         """
 
-        # pylint: disable=broad-except
+        # pylint: disable=broad-except, no-member
 
         _return = True
 

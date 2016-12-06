@@ -76,8 +76,6 @@ python.org: Enter the runtime context related to this object.
 :since: v0.2.00
         """
 
-        # pylint: disable=star-args
-
         Hook.call("{0}.before".format(self.hook_prefix), **self.kwargs)
     #
 
@@ -88,8 +86,6 @@ python.org: Exit the runtime context related to this object.
 :return: (bool) True to suppress exceptions
 :since:  v0.2.00
         """
-
-        # pylint: disable=star-args
 
         if (exc_type is None and exc_value is None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
         else: Hook.call("{0}.exception".format(self.hook_prefix), **self.kwargs)
