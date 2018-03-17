@@ -33,7 +33,7 @@ otherwise. Please note that None is not supported as a valid setting value.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
     """
@@ -42,7 +42,7 @@ otherwise. Please note that None is not supported as a valid setting value.
         """
 Constructor __init__(HookableSettings)
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         self.hook = hook
@@ -66,7 +66,7 @@ Checks if a given key is a defined setting.
 :param key: Settings key
 
 :return: (bool) True if defined
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         _return = True
@@ -83,7 +83,7 @@ Returns the value with the specified key.
 :param default: Default value if not set
 
 :return: (mixed) Value
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         _return = Hook.call(self.hook, **self.params)

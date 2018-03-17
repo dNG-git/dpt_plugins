@@ -37,7 +37,7 @@ The Hooks class provides hook-based Python plugins.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
     """
@@ -68,7 +68,7 @@ Call all functions registered for the hook with the specified parameters.
 :param _hook: Hook-ID
 
 :return: (mixed) Hook results; None if not defined
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         # pylint: disable=broad-except
@@ -114,7 +114,7 @@ This has to be the only registered function and may throw exceptions.
 :param _hook: Hook-ID
 
 :return: (mixed) Hook result; None if not defined
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         _hook = Binary.str(_hook)
@@ -151,7 +151,7 @@ This has to be the only registered function and may throw exceptions.
         """
 Free all plugin hooks to enable garbage collection.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         with Hook._instance_lock:
@@ -169,7 +169,7 @@ Free all plugin hooks to enable garbage collection.
 Get the hooks singleton.
 
 :return: (Hook) Object on success
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         if (Hook._instance is None):
@@ -189,7 +189,7 @@ Scans a plugin and loads its hooks.
 
 :param plugin: Plugin name
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         Manager.load_plugin(plugin)
@@ -206,7 +206,7 @@ Register a python function for the hook.
 :param exclusive: Add the given function exclusively.
 :param _weakref_only: True to use a weak reference
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         hook = Binary.str(hook)
@@ -250,7 +250,7 @@ Register a weakly referenced python function for the hook.
 :param prepend: Add function at the beginning of the stack if true.
 :param exclusive: Add the given function exclusively.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         Hook.register(hook, callback, prepend, exclusive, True)
@@ -263,7 +263,7 @@ Sets the LogHandler.
 
 :param log_handler: LogHandler to use
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         Hook._log_handler = log_handler
@@ -277,7 +277,7 @@ Unregister a python function from the hook.
 :param hook: Hook-ID
 :param callback: Python function to be unregistered
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         hook = Binary.str(hook)

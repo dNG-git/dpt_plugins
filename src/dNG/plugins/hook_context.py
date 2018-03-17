@@ -27,7 +27,7 @@ Provides an call context to provide "before", "after" and "exception" hooks.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
     """
@@ -38,7 +38,7 @@ Provides an call context to provide "before", "after" and "exception" hooks.
         """
 Constructor __init__(HookContext)
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         self.hook_prefix = hook_prefix
@@ -55,7 +55,7 @@ Keyword arguments used for hook calls
         """
 python.org: Called when the instance is "called" as a function [..].
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         def decorator(*args, **kwargs):
@@ -73,7 +73,7 @@ Decorator for wrapping a function or method with a call context.
         """
 python.org: Enter the runtime context related to this object.
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         Hook.call("{0}.before".format(self.hook_prefix), **self.kwargs)
@@ -84,7 +84,7 @@ python.org: Enter the runtime context related to this object.
 python.org: Exit the runtime context related to this object.
 
 :return: (bool) True to suppress exceptions
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         if (exc_type is None and exc_value is None): Hook.call("{0}.after".format(self.hook_prefix), **self.kwargs)
