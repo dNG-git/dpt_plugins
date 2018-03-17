@@ -31,7 +31,7 @@ This class provides a weak reference to an instance method.
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
     """
@@ -42,16 +42,16 @@ Constructor __init__(WeakrefMethod)
 
 :param method: Instance method to be bound
 
-:since: v0.2.00
+:since: v1.0.0
         """
 
         if (not hasattr(method, "__self__")): raise ValueException("Instance method given is invalid")
 
-        self.instance = ref(method.__self__)
+        self._instance_object = ref(method.__self__)
         """
 Weakly referenced instance
         """
-        self.method_name = method.__name__
+        self._method_name_value = method.__name__
         """
 Instance method name
         """
@@ -62,11 +62,11 @@ Instance method name
 python.org: Called when the instance is "called" as a function [..].
 
 :return: (object) Bound method; None if garbage collected
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
-        instance = self._get_instance()
-        return (None if (instance is None) else getattr(instance, self.method_name))
+        instance = self._instance
+        return (None if (instance is None) else getattr(instance, self._method_name_value))
     #
 
     def __eq__(self, other):
@@ -77,17 +77,17 @@ as follows: x==y calls x.__eq__(y)
 :param other: Object to be compaired with
 
 :return: (bool) True if equal
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         # pylint: disable=protected-access
 
-        instance = self._get_instance()
+        instance = self._instance
 
         return (instance is not None
                 and isinstance(other, WeakrefMethod)
-                and instance == other._get_instance()
-                and self.method_name == other._get_method_name()
+                and instance == other._instance
+                and self._method_name == other._method_name
                )
     #
 
@@ -99,31 +99,33 @@ as follows: x!=y and x<>y call x.__ne__(y)
 :param other: Object to be compaired with
 
 :return: (bool) True if not equal
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         return (not (self == other))
     #
 
-    def _get_instance(self):
+    @property
+    def _instance(self):
         """
 Returns the bound instance.
 
 :return: (object) Bound instance; None if garbage collected
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
-        return self.instance()
+        return self._instance_object()
     #
 
-    def _get_method_name(self):
+    @property
+    def _method_name(self):
         """
 Returns the method name of this weak reference instance.
 
 :return: (str) Method name
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
-        return self.instance()
+        return self._method_name_value
     #
 #

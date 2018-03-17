@@ -23,8 +23,8 @@ from copy import copy
 from os import path
 import os
 
-from dNG.module.named_loader import NamedLoader
 from dNG.runtime.exception_log_trap import ExceptionLogTrap
+from dNG.runtime.named_loader import NamedLoader
 
 _MODE_IMP = 1
 """
@@ -52,7 +52,7 @@ class Manager(NamedLoader):
 :copyright:  direct Netware Group - All rights reserved
 :package:    pas
 :subpackage: plugins
-:since:      v0.2.00
+:since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
              Mozilla Public License, v. 2.0
     """
@@ -72,7 +72,7 @@ to "dNG.plugins").
 :param prefix: Plugin name prefix
 
 :return: (bool) True on success
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         # pylint: disable=no-member
@@ -83,7 +83,7 @@ to "dNG.plugins").
         package = "{0}.{1}".format(prefix, plugin)
 
         if (NamedLoader._load_package(package) is not None):
-            package_path = path.join(Manager._get_loader().get_base_dir(), package.replace(".", path.sep))
+            package_path = path.join(Manager._get_loader().base_dir, package.replace(".", path.sep))
             if (not os.access(package_path, os.R_OK)): package_path = None
         else: package_path = None
 
@@ -117,7 +117,7 @@ Reload all plugins or the plugins matching the given prefix.
 :param prefix: Plugin prefix
 
 :return: (bool) True on success
-:since:  v0.2.00
+:since:  v1.0.0
         """
 
         # pylint: disable=broad-except, no-member
