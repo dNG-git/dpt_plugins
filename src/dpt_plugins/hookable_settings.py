@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-direct PAS
-Python Application Services
+direct Python Toolbox
+All-in-one toolbox to encapsulate Python runtime variants
 ----------------------------------------------------------------------------
 (C) direct Netware Group - All rights reserved
-https://www.direct-netware.de/redirect?pas;plugins
+https://www.direct-netware.de/redirect?dpt;plugins
 
 This Source Code Form is subject to the terms of the Mozilla Public License,
 v. 2.0. If a copy of the MPL was not distributed with this file, You can
@@ -13,15 +13,15 @@ obtain one at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------------------------
 https://www.direct-netware.de/redirect?licenses;mpl2
 ----------------------------------------------------------------------------
-#echo(pasPluginsVersion)#
+#echo(dptPluginsVersion)#
 #echo(__FILEPATH__)#
 """
 
 # pylint: disable=import-error
 
-from dNG.plugins.hook import Hook
+from dpt_settings import Settings
 
-from .settings import Settings
+from .hook import Hook
 
 class HookableSettings(object):
     """
@@ -31,7 +31,7 @@ otherwise. Please note that None is not supported as a valid setting value.
 
 :author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
-:package:    pas
+:package:    dpt
 :subpackage: plugins
 :since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2

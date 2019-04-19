@@ -1,14 +1,9 @@
 ----------------------------------------------------------------------------
-direct PAS
-Python Application Services
+direct Python Toolbox
+All-in-one toolbox to encapsulate Python runtime variants
 ----------------------------------------------------------------------------
 
-The Python Application Services of the direct Netware Group contain
-different modules. Each represents one aspect, feature or provides the base
-functionality for other modules.
-
-"pas_plugins" provides the infrastructure to support a hook based plugin
-system.
+"dpt-json" is an abstraction layer for JSON parsing and manipulation.
 
 ----------------------------------------------------------------------------
 Licensing

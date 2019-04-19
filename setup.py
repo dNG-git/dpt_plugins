@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-direct PAS
-Python Application Services
+direct Python Toolbox
+All-in-one toolbox to encapsulate Python runtime variants
 ----------------------------------------------------------------------------
 (C) direct Netware Group - All rights reserved
-https://www.direct-netware.de/redirect?pas;plugins
+https://www.direct-netware.de/redirect?dpt;plugins
 
 This Source Code Form is subject to the terms of the Mozilla Public License,
 v. 2.0. If a copy of the MPL was not distributed with this file, You can
@@ -16,54 +16,62 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 setup.py
 """
 
-from os import path
+from os import makedirs, path
 
-from distutils.core import setup
+try:
+    from setuptools import find_packages, setup
+except ImportError:
+    from distutils import find_packages, setup
+#
 
-from dNG.distutils.command.build_py import BuildPy
-from dNG.distutils.command.install_data import InstallData
-from dNG.distutils.temporary_directory import TemporaryDirectory
+_use_dist_mode = False
+
+try:
+    from dpt_builder_suite.distutils.build_py import BuildPy
+    from dpt_builder_suite.distutils.sdist import Sdist
+    from dpt_builder_suite.distutils.temporary_directory import TemporaryDirectory
+except ImportError:
+    _use_dist_mode = True
+#
 
 def get_version():
     """
 Returns the version currently in development.
 
 :return: (str) Version string
-:since:  v0.1.2
+:since:  v1.0.0
     """
 
     return "v1.0.0"
 #
 
-with TemporaryDirectory(dir = ".") as build_directory:
-    parameters = { "pasPluginsVersion": get_version() }
+_setup = { "version": get_version()[1:],
+           "data_files": [ ( "docs", [ "LICENSE", "README" ]) ],
+           "test_suite" : "tests"
+         }
 
-    InstallData.set_build_target_path(build_directory)
-    InstallData.set_build_target_parameters(parameters)
+if (_use_dist_mode):
+    _setup['package_dir'] = { "": "src" }
+    _setup['packages'] = find_packages("src")
 
-    _build_path = path.join(build_directory, "src")
+    setup(**_setup)
+else:
+    with TemporaryDirectory(dir = ".") as build_directory:
+        parameters = { "dptPluginsVersion": get_version() }
 
-    setup(name = "pas-plugins",
-          version = get_version(),
-          description = "Python Application Services",
-          long_description = """"pas_plugins" provides the infrastructure to support a hook based plugin system.""",
-          author = "direct Netware Group et al.",
-          author_email = "web@direct-netware.de",
-          license = "MPL2",
-          url = "https://www.direct-netware.de/redirect?pas;plugins",
+        BuildPy.set_build_target_path(build_directory)
+        BuildPy.set_build_target_parameters(parameters)
 
-          platforms = [ "any" ],
+        Sdist.set_build_target_path(build_directory)
+        Sdist.set_build_target_parameters(parameters)
 
-          setup_requires = "dng-builder-suite",
+        makedirs(path.join(build_directory, "src"))
 
-          package_dir = { "": _build_path },
-          packages = [ "dNG" ],
+        _setup['packages'] = [ "dpt_plugins" ]
 
-          data_files = [ ( "docs", [ "LICENSE", "README" ]) ],
+        # Customize "cmdclass" to first run builder.py
+        _setup['cmdclass'] = { "build_py": BuildPy, "sdist": Sdist }
 
-          # Override build_py to first run builder.py over all PAS modules
-          cmdclass = { "build_py": BuildPy,
-                       "install_data": InstallData
-                     }
-         )
+        setup(**_setup)
+    #
 #

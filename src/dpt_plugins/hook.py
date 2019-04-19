@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 """
-direct PAS
-Python Application Services
+direct Python Toolbox
+All-in-one toolbox to encapsulate Python runtime variants
 ----------------------------------------------------------------------------
 (C) direct Netware Group - All rights reserved
-https://www.direct-netware.de/redirect?pas;plugins
+https://www.direct-netware.de/redirect?dpt;plugins
 
 This Source Code Form is subject to the terms of the Mozilla Public License,
 v. 2.0. If a copy of the MPL was not distributed with this file, You can
@@ -13,7 +13,7 @@ obtain one at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------------------------
 https://www.direct-netware.de/redirect?licenses;mpl2
 ----------------------------------------------------------------------------
-#echo(pasPluginsVersion)#
+#echo(dptPluginsVersion)#
 #echo(__FILEPATH__)#
 """
 
@@ -22,10 +22,10 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from copy import copy
 from weakref import ref
 
-from dNG.data.binary import Binary
-from dNG.runtime.instance_lock import InstanceLock
-from dNG.runtime.value_exception import ValueException
-from dNG.runtime.weakref_method import WeakrefMethod
+from dpt_runtime.binary import Binary
+from dpt_threading.instance_lock import InstanceLock
+from dpt_runtime.value_exception import ValueException
+from pas.runtime.weakref_method import WeakrefMethod
 
 from .manager import Manager
 
@@ -35,7 +35,7 @@ The Hooks class provides hook-based Python plugins.
 
 :author:     direct Netware Group et al.
 :copyright:  direct Netware Group - All rights reserved
-:package:    pas
+:package:    dpt
 :subpackage: plugins
 :since:      v1.0.0
 :license:    https://www.direct-netware.de/redirect?licenses;mpl2
@@ -222,7 +222,7 @@ Register a python function for the hook.
                     if (_weakref_only):
                         callback = (WeakrefMethod(callback)
                                     if (hasattr(callback, "__self__")) else
-                                    ref(callback)
+                                    Weakref(callback)
                                    )
                     #
 
