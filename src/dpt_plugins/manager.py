@@ -36,6 +36,7 @@ except ImportError: _mode = None
 
 from dpt_module_loader import Loader
 from dpt_runtime.binary import Binary
+from dpt_runtime.environment import Environment
 from dpt_runtime.exception_log_trap import ExceptionLogTrap
 
 class Manager(object):
@@ -73,7 +74,10 @@ to empty string).
 
         _return = False
 
-        if (prefix is None and "dNGapp" in os.environ): prefix = os.environ['dNGapp']
+        if (prefix is None
+            and Environment.is_application_short_name_defined()
+           ): prefix = Environment.get_application_short_name()
+
         if (prefix != ""): plugin = "{0}_{1}".format(prefix, plugin)
 
         package_paths = [ ]
@@ -135,7 +139,9 @@ Reload all plugins or the plugins matching the given prefix.
 
         _return = True
 
-        if (prefix is None and "dNGapp" in os.environ): prefix = os.environ['dNGapp']
+        if (prefix is None
+            and Environment.is_application_short_name_defined()
+           ): prefix = Environment.get_application_short_name()
 
         if (prefix != ""):
             plugin_reload_prefix = (prefix
