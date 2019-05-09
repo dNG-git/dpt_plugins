@@ -17,6 +17,8 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
+from functools import wraps
+
 from .hook import Hook
 
 class HookContext(object):
@@ -58,6 +60,7 @@ python.org: Called when the instance is "called" as a function [..].
 :since: v1.0.0
         """
 
+        @wraps(f)
         def decorator(*args, **kwargs):
             """
 Decorator for wrapping a function or method with a call context.

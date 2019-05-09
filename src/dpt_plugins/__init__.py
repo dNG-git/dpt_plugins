@@ -19,5 +19,6 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 
 from .hookable_settings import HookableSettings
 from .hook import Hook
+from .hook_context import HookContext
 from .manager import Manager
 from .weakref_method import WeakrefMethod
