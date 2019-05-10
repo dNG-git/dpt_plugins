@@ -25,9 +25,9 @@ from weakref import ref
 from dpt_runtime.binary import Binary
 from dpt_threading.instance_lock import InstanceLock
 from dpt_runtime.value_exception import ValueException
-from pas.runtime.weakref_method import WeakrefMethod
 
 from .manager import Manager
+from .weakref_method import WeakrefMethod
 
 class Hook(dict):
     """
