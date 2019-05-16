@@ -81,7 +81,7 @@ to empty string).
         if (prefix != ""): plugin = "{0}_{1}".format(prefix, plugin)
 
         package_paths = [ ]
-        sub_package = "dpt_plugins.{1}".format(prefix, plugin)
+        sub_package = "dpt_plugins.{0}".format(plugin)
         sub_package_path = sub_package.replace(".", path.sep)
 
         for _path in Loader.get_base_dirs():
