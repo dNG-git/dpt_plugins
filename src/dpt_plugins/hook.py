@@ -183,16 +183,17 @@ Get the hooks singleton.
     #
 
     @staticmethod
-    def load(plugin):
+    def load(plugin, prefix = ""):
         """
-Scans a plugin and loads its hooks.
+Scans a plugin and loads its hooks without a plugin prefix by default.
 
 :param plugin: Plugin name
+:param prefix: Plugin name prefix
 
 :since: v1.0.0
         """
 
-        Manager.load_plugin(plugin)
+        Manager.load_plugin(plugin, prefix)
     #
 
     @staticmethod
@@ -254,6 +255,21 @@ Register a weakly referenced python function for the hook.
         """
 
         Hook.register(hook, callback, prepend, exclusive, True)
+    #
+
+    @staticmethod
+    def reload(plugin, prefix = ""):
+        """
+Reload hook plugins without a plugin prefix by default.
+
+:param plugin: Plugin name
+:param prefix: Plugin name prefix
+
+:return: (bool) True on success
+:since:  v1.0.0
+        """
+
+        Manager.reload_plugins(plugin, prefix)
     #
 
     @staticmethod
