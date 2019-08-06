@@ -223,7 +223,7 @@ Register a python function for the hook.
                     if (_weakref_only):
                         callback = (WeakrefMethod(callback)
                                     if (hasattr(callback, "__self__")) else
-                                    Weakref(callback)
+                                    ref(callback)
                                    )
                     #
 
