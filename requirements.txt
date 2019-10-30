@@ -1,5 +1,5 @@
-git+https://git.direct-netware.de/dpt/runtime/@v1.0.0#egg=dpt-runtime
-git+https://git.direct-netware.de/dpt/settings/@v1.0.0#egg=dpt-settings
-git+https://git.direct-netware.de/dpt/threading/@v1.0.0#egg=dpt-threading
+git+https://git.direct-netware.de/dpt/runtime/@v1.0.2#egg=dpt-runtime
+git+https://git.direct-netware.de/dpt/settings/@v1.1.2#egg=dpt-settings
+git+https://git.direct-netware.de/dpt/threading/@v1.0.1#egg=dpt-threading
 
-git+https://git.direct-netware.de/dpt/builder_suite/@v1.0.0#egg=dpt-builder-suite[gitsrc]
+git+https://git.direct-netware.de/dpt/builder_suite/@v1.0.1#egg=dpt-builder-suite[gitsrc]
