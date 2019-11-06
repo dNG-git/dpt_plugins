@@ -17,8 +17,6 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-# pylint: disable=import-error, no-name-in-module
-
 from weakref import ref
 
 from dpt_runtime.value_exception import ValueException

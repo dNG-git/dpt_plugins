@@ -17,8 +17,6 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-# pylint: disable=import-error
-
 from dpt_settings import Settings
 
 from .hook import Hook
