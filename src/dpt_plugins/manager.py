@@ -17,7 +17,7 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-# pylint: disable=import-error, no-name-in-module
+# pylint: disable=import-error,invalid-name,no-name-in-module
 
 from copy import copy
 from os import path
@@ -160,7 +160,7 @@ Reload all plugins or the plugins matching the given prefix.
            ): importlib.invalidate_caches()
 
         for plugin in Manager._plugins:
-            if (plugin_reload_prefix is None or package.startswith("{0}.".format(plugin_reload_prefix))):
+            if (plugin_reload_prefix is None or plugin.startswith("{0}.".format(plugin_reload_prefix))):
                 modules = (Manager._plugins[plugin].copy()
                            if (hasattr(Manager._plugins[plugin], "copy")) else
                            copy(Manager._plugins[plugin])
