@@ -17,12 +17,15 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-# pylint: disable=import-error,invalid-name,no-name-in-module
+# pylint: disable=import-error,invalid-name,no-name-in-module,wrong-import-order,wrong-import-position
 
 from copy import copy
 from os import path
 import os
-import sys
+
+from dpt_module_loader import Loader
+from dpt_runtime.environment import Environment
+from dpt_runtime.exception_log_trap import ExceptionLogTrap
 
 _MODE_IMPORTLIB = 1
 """
@@ -33,11 +36,6 @@ _mode = _MODE_IMPORTLIB
 
 try: import importlib
 except ImportError: _mode = None
-
-from dpt_module_loader import Loader
-from dpt_runtime.binary import Binary
-from dpt_runtime.environment import Environment
-from dpt_runtime.exception_log_trap import ExceptionLogTrap
 
 class Manager(object):
     """

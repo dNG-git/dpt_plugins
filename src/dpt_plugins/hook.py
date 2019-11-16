@@ -21,8 +21,8 @@ from copy import copy
 from weakref import ref
 
 from dpt_runtime.binary import Binary
-from dpt_threading.instance_lock import InstanceLock
 from dpt_runtime.value_exception import ValueException
+from dpt_threading.instance_lock import InstanceLock
 
 from .manager import Manager
 from .weakref_method import WeakrefMethod
@@ -69,7 +69,7 @@ Call all functions registered for the hook with the specified parameters.
 :since:  v1.0.0
         """
 
-        # pylint: disable=broad-except
+        # pylint: disable=broad-except,unsubscriptable-object,unsupported-membership-test
 
         _hook = Binary.str(_hook)
 
@@ -115,6 +115,8 @@ This has to be the only registered function and may throw exceptions.
 :since:  v1.0.0
         """
 
+        # pylint: disable=unsubscriptable-object,unsupported-membership-test
+
         _hook = Binary.str(_hook)
 
         if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.call_one({0})- (#echo(__LINE__)#)", _hook, context = "pas_plugins")
@@ -130,7 +132,8 @@ This has to be the only registered function and may throw exceptions.
             callbacks_count = len(hooks)
 
             if (callbacks_count > 1): raise ValueException("More than one function registered for the called hook")
-            elif (callbacks_count > 0):
+
+            if (callbacks_count > 0):
                 callback = (hooks[0]()
                             if (isinstance(hooks[0], WeakrefMethod)) else
                             hooks[0]
@@ -211,6 +214,8 @@ Register a python function for the hook.
         hook = Binary.str(hook)
 
         if (Hook._log_handler is not None): Hook._log_handler.debug("#echo(__FILEPATH__)# -Hook.register({0}, {1!r})- (#echo(__LINE__)#)", hook, callback, context = "pas_plugins")
+
+        # pylint: disable=unsubscriptable-object,unsupported-assignment-operation,unsupported-membership-test
 
         hook_registry = Hook.get_instance()
 
@@ -293,6 +298,8 @@ Unregister a python function from the hook.
 
 :since: v1.0.0
         """
+
+        # pylint: disable=unsubscriptable-object,unsupported-membership-test
 
         hook = Binary.str(hook)
 
