@@ -1,3 +1,3 @@
-git+git://git.direct-netware.de/dpt/runtime/@v1.0.2#egg=dpt-runtime
-git+git://git.direct-netware.de/dpt/settings/@v1.1.2#egg=dpt-settings
-git+git://git.direct-netware.de/dpt/threading/@v1.0.1#egg=dpt-threading
+dpt-runtime>=1,<2
+dpt-settings>=1,<2
+dpt-threading>=1,<2
