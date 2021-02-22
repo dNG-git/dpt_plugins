@@ -1,3 +1,4 @@
-dpt-runtime>=1,<2
+dpt-logging>=1.1.0,<2
+dpt-runtime>=2,<3
 dpt-settings>=1,<2
-dpt-threading>=1,<2
+dpt-threading>=2,<3

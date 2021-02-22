@@ -23,9 +23,9 @@ from copy import copy
 from os import path
 import os
 
+from dpt_logging import ExceptionLogTrap
 from dpt_module_loader import Loader
-from dpt_runtime.environment import Environment
-from dpt_runtime.exception_log_trap import ExceptionLogTrap
+from dpt_runtime import Environment
 
 _MODE_IMPORTLIB = 1
 """

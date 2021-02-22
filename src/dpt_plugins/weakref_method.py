@@ -19,7 +19,7 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 
 from weakref import ref
 
-from dpt_runtime.value_exception import ValueException
+from dpt_runtime.exceptions import ValueException
 
 class WeakrefMethod(object):
     """

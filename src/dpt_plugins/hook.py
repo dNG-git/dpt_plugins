@@ -20,9 +20,9 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 from copy import copy
 from weakref import ref
 
-from dpt_runtime.binary import Binary
-from dpt_runtime.value_exception import ValueException
-from dpt_threading.instance_lock import InstanceLock
+from dpt_runtime import Binary
+from dpt_runtime.exceptions import ValueException
+from dpt_threading import InstanceLock
 
 from .manager import Manager
 from .weakref_method import WeakrefMethod
