@@ -17,7 +17,7 @@ https://www.direct-netware.de/redirect?licenses;mpl2
 #echo(__FILEPATH__)#
 """
 
-from dpt_settings import Settings
+from dpt_runtime import Settings
 
 from .hook import Hook
 
