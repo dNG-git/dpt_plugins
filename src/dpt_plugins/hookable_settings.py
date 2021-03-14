@@ -36,7 +36,7 @@ otherwise. Please note that None is not supported as a valid setting value.
              Mozilla Public License, v. 2.0
     """
 
-    __slots__ = [ "hook", "params", "settings" ]
+    __slots__ = ( "hook", "params", "settings" )
     """
 python.org: __slots__ reserves space for the declared variables and prevents
 the automatic creation of __dict__ and __weakref__ for each instance.
